@@ -1,0 +1,390 @@
+```html
+{% load static %}
+<!doctype html>
+<html lang="pt-BR" data-bs-theme="light">
+<head>
+    <meta charset="utf-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1"
+    >
+
+    <meta
+        name="description"
+        content="{% block meta_description %}WEB — uma experiência web moderna, rápida e acessível.{% endblock %}"
+    >
+
+    <meta name="theme-color" content="#7c3aed">
+
+    <meta name="color-scheme" content="light dark">
+
+    <title>
+        {% block title %}WEB{% endblock %}
+    </title>
+
+    {# Substitua pelo caminho real do favicon, se existir. #}
+    <link
+        rel="icon"
+        href="{% static 'img/favicon.ico' %}"
+    >
+
+    {# Bootstrap 5 — disponibilize este arquivo em static/vendor/bootstrap/css/. #}
+    <link
+        rel="stylesheet"
+        href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}"
+    >
+
+    {# Bootstrap Icons — disponibilize este arquivo em static/vendor/bootstrap-icons/. #}
+    <link
+        rel="stylesheet"
+        href="{% static 'vendor/bootstrap-icons/font/bootstrap-icons.min.css' %}"
+    >
+
+    {# CSS principal do projeto. #}
+    <link
+        rel="stylesheet"
+        href="{% static 'css/base.css' %}"
+    >
+
+    {% block extra_head %}{% endblock %}
+</head>
+
+<body class="{% block body_class %}{% endblock %}">
+
+    <a
+        class="skip-link"
+        href="#main-content"
+    >
+        Pular para o conteúdo
+    </a>
+
+    {% block header %}
+
+    <header class="site-header">
+        <nav
+            class="navbar navbar-expand-lg"
+            aria-label="Navegação principal"
+        >
+            <div class="container">
+
+                {# Altere a rota se a página inicial possuir outro nome. #}
+                <a
+                    class="navbar-brand d-flex align-items-center gap-2"
+                    href="{% url 'home' %}"
+                    aria-label="WEB — página inicial"
+                >
+                    <span class="brand-mark" aria-hidden="true">
+                        <i class="bi bi-stars"></i>
+                    </span>
+
+                    <span class="brand-name">
+                        WEB
+                    </span>
+                </a>
+
+                <button
+                    class="navbar-toggler"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#main-navigation"
+                    aria-controls="main-navigation"
+                    aria-expanded="false"
+                    aria-label="Abrir menu de navegação"
+                >
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div
+                    class="collapse navbar-collapse"
+                    id="main-navigation"
+                >
+                    <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
+
+                        <li class="nav-item">
+                            <a
+                                class="nav-link"
+                                href="{% url 'home' %}"
+                            >
+                                <i
+                                    class="bi bi-house-door me-1"
+                                    aria-hidden="true"
+                                ></i>
+                                Início
+                            </a>
+                        </li>
+
+                        {#
+                            ADICIONE AQUI outras rotas reais do projeto.
+                            Exemplo:
+
+                            <li class="nav-item">
+                                <a
+                                    class="nav-link"
+                                    href="{% url 'sobre' %}"
+                                >
+                                    Sobre
+                                </a>
+                            </li>
+                        #}
+
+                    </ul>
+
+                    <div class="d-flex align-items-center gap-2">
+
+                        <!-- Alternância de tema -->
+                        <button
+                            type="button"
+                            class="btn btn-theme"
+                            id="theme-toggle"
+                            aria-label="Alternar tema"
+                            title="Alternar tema"
+                        >
+                            <i
+                                class="bi bi-moon-stars"
+                                id="theme-icon"
+                                aria-hidden="true"
+                            ></i>
+                        </button>
+
+                        {% if user.is_authenticated %}
+
+                            <div class="dropdown">
+
+                                <button
+                                    class="btn user-menu dropdown-toggle"
+                                    type="button"
+                                    data-bs-toggle="dropdown"
+                                    aria-expanded="false"
+                                >
+                                    <span
+                                        class="user-avatar"
+                                        aria-hidden="true"
+                                    >
+                                        <i class="bi bi-person"></i>
+                                    </span>
+
+                                    <span class="d-none d-sm-inline">
+                                        {{ user.get_username }}
+                                    </span>
+                                </button>
+
+                                <ul
+                                    class="dropdown-menu dropdown-menu-end"
+                                >
+                                    {#
+                                        Se existir uma página de perfil,
+                                        substitua/adicione a rota real.
+                                    #}
+
+                                    <li>
+                                        <span class="dropdown-item-text">
+                                            <small class="text-body-secondary">
+                                                Conta conectada
+                                            </small>
+                                        </span>
+                                    </li>
+
+                                    <li>
+                                        <hr class="dropdown-divider">
+                                    </li>
+
+                                    {#
+                                        Logout como POST para respeitar
+                                        boas práticas e proteção CSRF.
+                                    #}
+                                    <li>
+                                        <form
+                                            method="post"
+                                            action="{% url 'logout' %}"
+                                            class="m-0"
+                                        >
+                                            {% csrf_token %}
+
+                                            <button
+                                                type="submit"
+                                                class="dropdown-item text-danger"
+                                            >
+                                                <i
+                                                    class="bi bi-box-arrow-right me-2"
+                                                    aria-hidden="true"
+                                                ></i>
+                                                Sair
+                                            </button>
+                                        </form>
+                                    </li>
+                                </ul>
+
+                            </div>
+
+                        {% else %}
+
+                            {# Rota assumida: login #}
+                            <a
+                                href="{% url 'login' %}"
+                                class="btn btn-login"
+                            >
+                                <i
+                                    class="bi bi-box-arrow-in-right me-1"
+                                    aria-hidden="true"
+                                ></i>
+                                Entrar
+                            </a>
+
+                        {% endif %}
+
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    {% endblock %}
+
+
+    <div
+        class="messages-container container"
+        aria-live="polite"
+        aria-atomic="true"
+    >
+        {% if messages %}
+            {% for message in messages %}
+
+                <div
+                    class="
+                        alert
+                        {% if message.tags == 'success' %}
+                            alert-success
+                        {% elif message.tags == 'info' %}
+                            alert-info
+                        {% elif message.tags == 'warning' %}
+                            alert-warning
+                        {% elif message.tags == 'error' %}
+                            alert-danger
+                        {% else %}
+                            alert-secondary
+                        {% endif %}
+                        alert-dismissible
+                        fade
+                        show
+                    "
+                    role="alert"
+                >
+
+                    {% if message.tags == 'success' %}
+                        <i
+                            class="bi bi-check-circle-fill me-2"
+                            aria-hidden="true"
+                        ></i>
+
+                    {% elif message.tags == 'info' %}
+                        <i
+                            class="bi bi-info-circle-fill me-2"
+                            aria-hidden="true"
+                        ></i>
+
+                    {% elif message.tags == 'warning' %}
+                        <i
+                            class="bi bi-exclamation-triangle-fill me-2"
+                            aria-hidden="true"
+                        ></i>
+
+                    {% elif message.tags == 'error' %}
+                        <i
+                            class="bi bi-x-circle-fill me-2"
+                            aria-hidden="true"
+                        ></i>
+                    {% endif %}
+
+                    {{ message }}
+
+                    <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="alert"
+                        aria-label="Fechar mensagem"
+                    ></button>
+
+                </div>
+
+            {% endfor %}
+        {% endif %}
+    </div>
+
+
+    <main
+        id="main-content"
+        tabindex="-1"
+    >
+        {% block content %}{% endblock %}
+    </main>
+
+
+    {% block footer %}
+
+    <footer class="site-footer">
+        <div class="container">
+
+            <div class="row gy-4 align-items-center">
+
+                <div class="col-lg-6">
+
+                    <a
+                        href="{% url 'home' %}"
+                        class="footer-brand"
+                    >
+                        WEB
+                    </a>
+
+                    <p class="footer-description mb-0">
+                        Uma experiência web moderna, acessível e responsiva.
+                    </p>
+
+                </div>
+
+                <div class="col-lg-6">
+
+                    <div
+                        class="footer-content"
+                    >
+                        <p class="mb-0">
+                            &copy;
+                            {% now "Y" %}
+                            WEB. Todos os direitos reservados.
+                        </p>
+
+                        {#
+                            ADICIONE aqui links reais de:
+                            - Política de Privacidade
+                            - Termos de Uso
+                            - Contato
+                        #}
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+    </footer>
+
+    {% endblock %}
+
+
+    {# Bootstrap JS local. #}
+    <script
+        src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"
+        defer
+    ></script>
+
+    {# JavaScript geral do projeto. #}
+    <script
+        src="{% static 'js/base.js' %}"
+        defer
+    ></script>
+
+    {% block extra_js %}{% endblock %}
+
+</body>
+</html>
+```
