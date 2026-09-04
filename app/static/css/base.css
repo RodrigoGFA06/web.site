@@ -1,0 +1,709 @@
+
+/* =========================================================
+   GABARITEI — MENU PREMIUM
+   Preto / Grafite / Vermelho Neon
+   ========================================================= */
+
+/* NAVBAR PRINCIPAL */
+
+.navbar {
+    position: sticky;
+    top: 0;
+    z-index: 9999;
+
+    min-height: 76px;
+
+    background:
+        linear-gradient(
+            180deg,
+            rgba(7, 7, 9, 0.98),
+            rgba(10, 10, 12, 0.94)
+        ) !important;
+
+    border-bottom: 1px solid rgba(255, 20, 55, 0.16) !important;
+
+    box-shadow:
+        0 10px 35px rgba(0, 0, 0, 0.55),
+        0 1px 0 rgba(255, 20, 55, 0.08);
+
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+}
+
+
+/* LINHA NEON ABAIXO DO MENU */
+
+.navbar::after {
+    content: "";
+
+    position: absolute;
+    left: 0;
+    bottom: 0;
+
+    width: 100%;
+    height: 1px;
+
+    background:
+        linear-gradient(
+            90deg,
+            transparent 0%,
+            rgba(255, 20, 55, 0.15) 15%,
+            #ff1738 50%,
+            rgba(255, 20, 55, 0.15) 85%,
+            transparent 100%
+        );
+
+    box-shadow:
+        0 0 10px rgba(255, 20, 55, 0.45);
+
+    opacity: 0.8;
+}
+
+
+/* =========================================================
+   LOGO
+   ========================================================= */
+
+.navbar-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    color: #fff !important;
+
+    font-size: 1.15rem;
+    font-weight: 850;
+    letter-spacing: -0.5px;
+
+    transition:
+        transform 0.25s ease,
+        filter 0.25s ease;
+}
+
+.navbar-brand:hover {
+    transform: translateY(-1px);
+    filter:
+        drop-shadow(
+            0 0 10px rgba(255, 23, 56, 0.35)
+        );
+}
+
+
+/* ÍCONE DA LOGO */
+
+.navbar-brand .bi-stars {
+    width: 40px;
+    height: 40px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    color: #fff;
+
+    background:
+        radial-gradient(
+            circle at 35% 30%,
+            #ff526b,
+            #ff1738 42%,
+            #850016 100%
+        );
+
+    border: 1px solid rgba(255, 80, 105, 0.8);
+
+    border-radius: 12px;
+
+    box-shadow:
+        0 0 8px rgba(255, 23, 56, 0.7),
+        0 0 24px rgba(255, 23, 56, 0.3),
+        inset 0 0 12px rgba(255, 255, 255, 0.08);
+
+    transition:
+        transform 0.3s ease,
+        box-shadow 0.3s ease;
+}
+
+.navbar-brand:hover .bi-stars {
+    transform: rotate(-6deg) scale(1.06);
+
+    box-shadow:
+        0 0 10px rgba(255, 23, 56, 0.9),
+        0 0 35px rgba(255, 23, 56, 0.42),
+        inset 0 0 14px rgba(255, 255, 255, 0.12);
+}
+
+
+/* =========================================================
+   ÁREA CENTRAL DO MENU
+   ========================================================= */
+
+/*
+   O menu fica visualmente separado do logo
+   e ganha aparência de "painel" premium.
+*/
+
+.navbar-collapse {
+    display: flex;
+    align-items: center;
+}
+
+.navbar-nav {
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 5px;
+
+    margin: 0 auto;
+
+    padding: 5px;
+
+    background:
+        rgba(255, 255, 255, 0.025);
+
+    border: 1px solid rgba(255, 255, 255, 0.055);
+
+    border-radius: 15px;
+
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.025),
+        0 8px 25px rgba(0, 0, 0, 0.22);
+}
+
+
+/* =========================================================
+   BOTÕES DO MENU
+   ========================================================= */
+
+.navbar-nav .nav-link {
+    position: relative;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 43px;
+
+    padding: 9px 15px !important;
+
+    color: #aeb0b7 !important;
+
+    border-radius: 11px;
+
+    font-size: 0.9rem;
+    font-weight: 650;
+
+    white-space: nowrap;
+
+    transition:
+        color 0.25s ease,
+        background 0.25s ease,
+        transform 0.25s ease,
+        box-shadow 0.25s ease;
+}
+
+
+/* ÍCONE DO BOTÃO */
+
+.navbar-nav .nav-link i,
+.navbar-nav .nav-link .bi {
+    margin-right: 7px;
+
+    font-size: 0.98rem;
+
+    transition:
+        transform 0.25s ease,
+        color 0.25s ease,
+        filter 0.25s ease;
+}
+
+
+/* =========================================================
+   HOVER
+   ========================================================= */
+
+.navbar-nav .nav-link:hover {
+    color: #fff !important;
+
+    background:
+        rgba(255, 23, 56, 0.08);
+
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 5px 16px rgba(0, 0, 0, 0.25),
+        inset 0 0 14px rgba(255, 23, 56, 0.035);
+}
+
+
+.navbar-nav .nav-link:hover i,
+.navbar-nav .nav-link:hover .bi {
+    color: #ff2948;
+
+    transform:
+        translateY(-1px)
+        scale(1.08);
+
+    filter:
+        drop-shadow(
+            0 0 7px rgba(255, 23, 56, 0.65)
+        );
+}
+
+
+/* =========================================================
+   LINHA ANIMADA DO HOVER
+   ========================================================= */
+
+.navbar-nav .nav-link::before {
+    content: "";
+
+    position: absolute;
+
+    left: 50%;
+    bottom: 3px;
+
+    width: 0;
+    height: 2px;
+
+    transform: translateX(-50%);
+
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            #ff1738,
+            transparent
+        );
+
+    border-radius: 10px;
+
+    box-shadow:
+        0 0 8px rgba(255, 23, 56, 0.8);
+
+    transition:
+        width 0.3s ease;
+}
+
+
+.navbar-nav .nav-link:hover::before {
+    width: 55%;
+}
+
+
+/* =========================================================
+   BOTÃO ATIVO
+   ========================================================= */
+
+.navbar-nav .nav-link.active {
+    color: #fff !important;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(255, 23, 56, 0.18),
+            rgba(255, 23, 56, 0.055)
+        );
+
+    border: 1px solid rgba(255, 23, 56, 0.18);
+
+    box-shadow:
+        inset 0 0 18px rgba(255, 23, 56, 0.055),
+        0 0 12px rgba(255, 23, 56, 0.08);
+}
+
+
+.navbar-nav .nav-link.active::before {
+    width: 65%;
+}
+
+
+.navbar-nav .nav-link.active i,
+.navbar-nav .nav-link.active .bi {
+    color: #ff2948;
+
+    filter:
+        drop-shadow(
+            0 0 7px rgba(255, 23, 56, 0.75)
+        );
+}
+
+
+/* =========================================================
+   BOTÃO DE TEMA
+   ========================================================= */
+
+#theme-toggle {
+    position: relative;
+
+    width: 43px;
+    height: 43px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    color: #e9e9eb !important;
+
+    background:
+        #15161a !important;
+
+    border: 1px solid rgba(255, 23, 56, 0.25) !important;
+
+    border-radius: 12px !important;
+
+    transition:
+        transform 0.25s ease,
+        background 0.25s ease,
+        border-color 0.25s ease,
+        box-shadow 0.25s ease;
+}
+
+
+#theme-toggle:hover {
+    color: #fff !important;
+
+    background:
+        rgba(255, 23, 56, 0.1) !important;
+
+    border-color:
+        rgba(255, 23, 56, 0.7) !important;
+
+    transform:
+        translateY(-2px)
+        rotate(-4deg);
+
+    box-shadow:
+        0 0 12px rgba(255, 23, 56, 0.4),
+        0 0 25px rgba(255, 23, 56, 0.12);
+}
+
+
+/* =========================================================
+   BOTÃO DE PERFIL
+   ========================================================= */
+
+.navbar .dropdown-toggle {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+
+    min-height: 43px;
+
+    color: #e5e5e8 !important;
+
+    background:
+        rgba(255, 255, 255, 0.035) !important;
+
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+
+    border-radius: 11px !important;
+
+    padding: 8px 13px !important;
+
+    transition:
+        background 0.25s ease,
+        border-color 0.25s ease,
+        box-shadow 0.25s ease,
+        transform 0.25s ease;
+}
+
+
+.navbar .dropdown-toggle:hover {
+    color: #fff !important;
+
+    background:
+        rgba(255, 23, 56, 0.09) !important;
+
+    border-color:
+        rgba(255, 23, 56, 0.32) !important;
+
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 7px 20px rgba(0, 0, 0, 0.3);
+}
+
+
+/* =========================================================
+   DROPDOWN
+   ========================================================= */
+
+.navbar .dropdown-menu {
+    margin-top: 10px !important;
+
+    padding: 7px !important;
+
+    min-width: 210px;
+
+    background:
+        rgba(13, 14, 17, 0.98) !important;
+
+    border:
+        1px solid rgba(255, 23, 56, 0.22) !important;
+
+    border-radius: 14px !important;
+
+    box-shadow:
+        0 25px 60px rgba(0, 0, 0, 0.65),
+        0 0 25px rgba(255, 23, 56, 0.08);
+
+    backdrop-filter: blur(20px);
+}
+
+
+.navbar .dropdown-item {
+    padding: 10px 12px !important;
+
+    color: #c8c9ce !important;
+
+    border-radius: 9px;
+
+    transition:
+        background 0.2s ease,
+        color 0.2s ease,
+        transform 0.2s ease;
+}
+
+
+.navbar .dropdown-item:hover {
+    color: #fff !important;
+
+    background:
+        rgba(255, 23, 56, 0.12) !important;
+
+    transform: translateX(3px);
+}
+
+
+.navbar .dropdown-item i {
+    margin-right: 8px;
+
+    color: #ff2948;
+}
+
+
+/* =========================================================
+   BOTÃO DE LOGIN
+   ========================================================= */
+
+.navbar .btn-primary {
+    min-height: 43px;
+
+    padding: 9px 18px;
+
+    color: #fff !important;
+
+    background:
+        linear-gradient(
+            135deg,
+            #ff1738,
+            #d60025
+        ) !important;
+
+    border:
+        1px solid #ff405a !important;
+
+    border-radius: 11px !important;
+
+    box-shadow:
+        0 0 8px rgba(255, 23, 56, 0.38),
+        0 7px 20px rgba(255, 23, 56, 0.13);
+
+    transition:
+        transform 0.25s ease,
+        box-shadow 0.25s ease,
+        filter 0.25s ease;
+}
+
+
+.navbar .btn-primary:hover {
+    color: #fff !important;
+
+    filter: brightness(1.08);
+
+    transform:
+        translateY(-2px)
+        scale(1.02);
+
+    box-shadow:
+        0 0 12px rgba(255, 23, 56, 0.7),
+        0 0 30px rgba(255, 23, 56, 0.25);
+}
+
+
+/* =========================================================
+   ANIMAÇÃO DE ENTRADA DO MENU
+   ========================================================= */
+
+.navbar-nav .nav-item {
+    animation:
+        menuItemIn 0.45s ease both;
+}
+
+
+.navbar-nav .nav-item:nth-child(1) {
+    animation-delay: 0.03s;
+}
+
+.navbar-nav .nav-item:nth-child(2) {
+    animation-delay: 0.06s;
+}
+
+.navbar-nav .nav-item:nth-child(3) {
+    animation-delay: 0.09s;
+}
+
+.navbar-nav .nav-item:nth-child(4) {
+    animation-delay: 0.12s;
+}
+
+.navbar-nav .nav-item:nth-child(5) {
+    animation-delay: 0.15s;
+}
+
+.navbar-nav .nav-item:nth-child(6) {
+    animation-delay: 0.18s;
+}
+
+
+@keyframes menuItemIn {
+    from {
+        opacity: 0;
+        transform: translateY(-7px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+.navbar-toggler {
+    width: 44px;
+    height: 42px;
+
+    color: #fff !important;
+
+    background:
+        #15161a !important;
+
+    border:
+        1px solid rgba(255, 23, 56, 0.3) !important;
+
+    border-radius: 11px !important;
+
+    box-shadow: none !important;
+
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+
+.navbar-toggler:hover {
+    background:
+        rgba(255, 23, 56, 0.1) !important;
+
+    border-color:
+        #ff1738 !important;
+
+    box-shadow:
+        0 0 12px rgba(255, 23, 56, 0.25) !important;
+}
+
+
+@media (max-width: 991px) {
+
+    .navbar-collapse {
+        margin-top: 12px;
+
+        padding: 10px;
+
+        background:
+            rgba(9, 10, 12, 0.98);
+
+        border:
+            1px solid rgba(255, 23, 56, 0.16);
+
+        border-radius: 15px;
+
+        box-shadow:
+            0 20px 45px rgba(0, 0, 0, 0.55);
+
+        backdrop-filter: blur(18px);
+    }
+
+    .navbar-nav {
+        width: 100%;
+
+        display: flex;
+
+        align-items: stretch;
+
+        gap: 4px;
+
+        margin: 0;
+
+        padding: 5px;
+
+        background: transparent;
+
+        border: 0;
+
+        box-shadow: none;
+    }
+
+    .navbar-nav .nav-link {
+        justify-content: flex-start;
+
+        width: 100%;
+
+        min-height: 45px;
+    }
+
+    .navbar-nav .nav-link::before {
+        left: 0;
+
+        width: 0;
+
+        transform: none;
+    }
+
+    .navbar-nav .nav-link:hover::before,
+    .navbar-nav .nav-link.active::before {
+        width: 4px;
+
+        height: 65%;
+
+        bottom: 50%;
+
+        transform: translateY(50%);
+
+        border-radius: 0 5px 5px 0;
+    }
+}
+
+
+/* =========================================================
+   REDUÇÃO DE MOVIMENTO
+   ========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
