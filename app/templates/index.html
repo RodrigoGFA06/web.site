@@ -1,1 +1,21 @@
 {% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row align-items-center min-vh-75">
+        <div class="col-lg-6 text-center text-lg-start">
+            <h1 class="display-4 fw-bold text-white mb-4">Bem-vindo ao CONNECT</h1>
+            <p class="lead text-white-50 mb-4">Uma plataforma moderna para conectar pessoas, compartilhar momentos e conversar com amigos de forma simples e rápida.</p>
+            <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+                <a href="#" class="btn btn-primary btn-lg px-4 me-md-2 rounded-pill shadow-sm">Começar Agora</a>
+                <a href="#" class="btn btn-outline-light btn-lg px-4 rounded-pill">Saber Mais</a>
+            </div>
+        </div>
+        <div class="col-lg-6 mt-5 mt-lg-0 text-center">
+            <div class="position-relative">
+                <i class="bi bi-chat-heart-fill text-primary" style="font-size: 15rem; filter: drop-shadow(0 0 20px rgba(13, 110, 253, 0.5));"></i>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

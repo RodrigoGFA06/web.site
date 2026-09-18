@@ -15,8 +15,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-LOGIN_REDIRECT = "/"
-LOGOUT_REDIRECT_UTL = "contas/login"
+LOGIN_REDIRECT_URL = "/"
+LOGOUT_REDIRECT_URL = "contas/login"
 
 
 # Application definition
@@ -117,3 +117,7 @@ MAILERS = {
         'BACKEND': 'django.core.mail.backends.console.EmailBackend',
     },
 }
+
+import os
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
