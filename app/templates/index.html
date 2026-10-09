@@ -1,21 +1,129 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="container mt-5">
-    <div class="row align-items-center min-vh-75">
-        <div class="col-lg-6 text-center text-lg-start">
-            <h1 class="display-4 fw-bold text-white mb-4">Bem-vindo ao CONNECT</h1>
-            <p class="lead text-white-50 mb-4">Uma plataforma moderna para conectar pessoas, compartilhar momentos e conversar com amigos de forma simples e rápida.</p>
-            <div class="d-grid gap-2 d-md-flex justify-content-md-start">
-                <a href="#" class="btn btn-primary btn-lg px-4 me-md-2 rounded-pill shadow-sm">Começar Agora</a>
-                <a href="#" class="btn btn-outline-light btn-lg px-4 rounded-pill">Saber Mais</a>
+{% if user.is_authenticated %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <!-- Feed centralizado tipo Instagram -->
+        <div class="col-12 col-md-8 col-lg-6" style="max-width: 470px;">
+            
+            {% for post in posts %}
+            <div class="card glass-panel rounded-4 mb-4 border-0">
+                <!-- Cabeçalho do Post -->
+                <div class="card-header bg-transparent border-0 d-flex align-items-center p-3">
+                    <div class="me-3">
+                        {% if post.user.profile.avatar %}
+                            <img src="{{ post.user.profile.avatar.url }}" class="rounded-circle border border-secondary" style="width: 32px; height: 32px; object-fit: cover;">
+                        {% else %}
+                            <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; font-size: 14px;">
+                                {{ post.user.username|first|upper }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <a href="#" class="text-white text-decoration-none fw-bold">{{ post.user.username }}</a>
+                        <span class="text-muted ms-1" style="font-size: 0.85rem;">• {{ post.created_at|timesince }} atrás</span>
+                    </div>
+                    <div class="ms-auto">
+                        <i class="bi bi-three-dots"></i>
+                    </div>
+                </div>
+
+                <!-- Mídia do Post (Full width) -->
+                {% if post.image %}
+                <img src="{{ post.image.url }}" class="img-fluid w-100" alt="Post" style="max-height: 585px; object-fit: cover; border-radius: 4px;">
+                {% endif %}
+                
+                {% if post.video %}
+                <video src="{{ post.video.url }}" controls class="w-100" style="max-height: 585px; object-fit: contain; background: #111;"></video>
+                {% endif %}
+                
+                {% if post.audio %}
+                <div class="p-4 bg-transparent text-center border-top border-bottom" style="border-color: rgba(255,255,255,0.08) !important;">
+                    <i class="bi bi-music-note-beamed text-white fs-1 mb-3 d-block"></i>
+                    <audio src="{{ post.audio.url }}" controls class="w-100"></audio>
+                </div>
+                {% endif %}
+
+                <!-- Ações e Curtidas -->
+                <div class="card-body bg-transparent p-3 pb-2 border-0">
+                    <div class="d-flex mb-2 fs-4">
+                        <a href="{% url 'like_post' post.id %}" class="text-white text-decoration-none me-3">
+                            <i class="bi bi-heart{% if user in post.likes.all %}-fill text-danger{% endif %}"></i>
+                        </a>
+                        <a href="#" class="text-white text-decoration-none me-3" data-bs-toggle="collapse" data-bs-target="#comments-{{ post.id }}">
+                            <i class="bi bi-chat"></i>
+                        </a>
+                        <a href="javascript:void(0);" onclick="navigator.clipboard.writeText(window.location.origin + '{% url 'home' %}#post-{{ post.id }}').then(() => alert('Link copiado!'));" class="text-white text-decoration-none" title="Compartilhar">
+                            <i class="bi bi-send"></i>
+                        </a>
+                        <a href="#" class="text-white text-decoration-none ms-auto">
+                            <i class="bi bi-bookmark"></i>
+                        </a>
+                    </div>
+                    
+                    {% if post.likes.count > 0 %}
+                    <p class="fw-bold mb-1">{{ post.likes.count }} curtidas</p>
+                    {% endif %}
+
+                    <!-- Legenda -->
+                    {% if post.content %}
+                    <p class="mb-1">
+                        <a href="#" class="text-white text-decoration-none fw-bold me-1">{{ post.user.username }}</a>
+                        <span>{{ post.content }}</span>
+                    </p>
+                    {% endif %}
+
+                    <!-- Botão para ver todos os comentários -->
+                    {% if post.comments.count > 0 %}
+                    <a href="#" class="text-muted text-decoration-none d-block mb-2" data-bs-toggle="collapse" data-bs-target="#comments-{{ post.id }}">
+                        Ver todos os {{ post.comments.count }} comentários
+                    </a>
+                    {% endif %}
+
+                    <!-- Seção de Comentários Colapsável -->
+                    <div class="collapse" id="comments-{{ post.id }}">
+                        {% for comment in post.comments.all %}
+                        <p class="mb-1">
+                            <a href="#" class="text-white text-decoration-none fw-bold me-1">{{ comment.user.username }}</a>
+                            <span>{{ comment.content }}</span>
+                        </p>
+                        {% endfor %}
+                    </div>
+                    
+                    <form action="{% url 'comment_post' post.id %}" method="post" class="mt-2 d-flex align-items-center border-top border-secondary pt-2">
+                        {% csrf_token %}
+                        <input type="text" name="content" class="form-control bg-transparent border-0 text-light px-0 shadow-none" placeholder="Adicione um comentário..." required style="font-size: 0.9rem;">
+                        <button type="submit" class="btn btn-link text-spider-blue text-decoration-none fw-bold px-0 shadow-none">Publicar</button>
+                    </form>
+                </div>
             </div>
-        </div>
-        <div class="col-lg-6 mt-5 mt-lg-0 text-center">
-            <div class="position-relative">
-                <i class="bi bi-chat-heart-fill text-primary" style="font-size: 15rem; filter: drop-shadow(0 0 20px rgba(13, 110, 253, 0.5));"></i>
+            {% empty %}
+            <div class="text-center p-5 mt-5">
+                <div class="rounded-circle border border-2 border-secondary d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                    <i class="bi bi-camera fs-1 text-white"></i>
+                </div>
+                <h3 class="text-white">Nenhuma publicação ainda</h3>
+                <p class="text-muted">As fotos e vídeos que seus amigos compartilharem aparecerão aqui.</p>
+                <a href="{% url 'descobrir' %}" class="btn btn-spider mt-2">Encontrar amigos</a>
             </div>
+            {% endfor %}
         </div>
     </div>
 </div>
+{% else %}
+<div class="container d-flex flex-column justify-content-center align-items-center min-vh-100 bg-transparent">
+    <div class="text-center p-5 glass-panel rounded-4" style="max-width: 400px; width: 100%;">
+        <h1 class="display-3 font-monospace fw-bold text-white mb-4">spider</h1>
+        <p class="text-muted mb-4">Cadastre-se para ver fotos e vídeos dos seus amigos.</p>
+        <a href="{% url 'login' %}" class="btn btn-spider w-100 py-2 fw-bold rounded-3 mb-3">Entrar</a>
+        <div class="d-flex align-items-center my-3">
+            <div class="flex-grow-1 border-top border-secondary"></div>
+            <span class="mx-3 text-muted fw-bold">OU</span>
+            <div class="flex-grow-1 border-top border-secondary"></div>
+        </div>
+        <p class="text-white mt-4 mb-0">Não tem uma conta? <a href="{% url 'register' %}" class="text-spider-blue text-decoration-none fw-bold">Cadastre-se</a></p>
+    </div>
+</div>
+{% endif %}
 {% endblock %}

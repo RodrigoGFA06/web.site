@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block title %}Criar Conta • spider{% endblock %}
+
+{% block content %}
+<div class="container d-flex flex-column justify-content-center align-items-center min-vh-100 bg-transparent">
+    <div class="text-center p-5 glass-panel rounded-4 mb-3" style="max-width: 400px; width: 100%;">
+        <h1 class="display-3 font-monospace fw-bold text-white mb-4">spider</h1>
+        <p class="text-muted mb-4 fw-bold">Cadastre-se para ver fotos e vídeos dos seus amigos.</p>
+        
+        <form method="post" action="{% url 'register' %}">
+            {% csrf_token %}
+            {% for field in form %}
+                <div class="mb-3 text-start">
+                    <input type="{% if 'password' in field.name %}password{% else %}text{% endif %}" name="{{ field.name }}" class="form-control bg-dark text-light border-secondary shadow-none" placeholder="{{ field.label }}" required>
+                    {% if field.errors %}
+                        <small class="text-danger">{{ field.errors|striptags }}</small>
+                    {% endif %}
+                </div>
+            {% endfor %}
+            <button type="submit" class="btn btn-spider w-100 py-2 fw-bold rounded-3 mt-3">Cadastre-se</button>
+        </form>
+        
+        <p class="text-muted mt-4 mb-0 small">Ao se cadastrar, você concorda com nossos Termos, Política de Privacidade e Política de Cookies.</p>
+    </div>
+    
+    <div class="text-center p-4 glass-panel rounded-4" style="max-width: 400px; width: 100%;">
+        <p class="text-white mb-0">Tem uma conta? <a href="{% url 'login' %}" class="text-spider-blue text-decoration-none fw-bold">Conecte-se</a></p>
+    </div>
+</div>
+{% endblock %}
