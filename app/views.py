@@ -5,9 +5,15 @@ from django.contrib.auth.models import User
 
 def inicio(request):
     if request.user.is_authenticated:
+        # Garante que Profile existe para o usuário (evita erros no template)
+        from .models import Profile
+        Profile.objects.get_or_create(user=request.user)
+
         following_ids = request.user.following.values_list('followed_id', flat=True)
-        posts = Post.objects.filter(user_id__in=list(following_ids) + [request.user.id]).order_by('-created_at')
-        suggested_users = User.objects.exclude(id__in=list(following_ids) + [request.user.id])[:5]
+        posts = Post.objects.filter(
+            user_id__in=list(following_ids) + [request.user.id]
+        ).order_by('-created_at').select_related('user', 'user__profile').prefetch_related('likes', 'comments')
+        suggested_users = User.objects.exclude(id__in=list(following_ids) + [request.user.id])[:6]
         return render(request, "index.html", {'posts': posts, 'suggested_users': suggested_users})
     else:
         return render(request, "index.html")

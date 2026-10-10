@@ -15,7 +15,7 @@ class Profile(models.Model):
 
 class Post(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='posts')
-    content = models.TextField()
+    content = models.TextField(blank=True, null=True)
     image = models.ImageField(upload_to='post_images/', blank=True, null=True)
     video = models.FileField(upload_to='post_videos/', blank=True, null=True)
     audio = models.FileField(upload_to='post_audios/', blank=True, null=True)

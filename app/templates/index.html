@@ -1,128 +1,258 @@
 {% extends 'base.html' %}
 
+{% block title %}spider · Feed{% endblock %}
+
 {% block content %}
 {% if user.is_authenticated %}
+
+<style>
+    /* Feed animations */
+    .post-card {
+        animation: fadeInUp 0.4s ease forwards;
+        opacity: 0;
+    }
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(18px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+    .post-card:nth-child(1) { animation-delay: 0.05s; }
+    .post-card:nth-child(2) { animation-delay: 0.12s; }
+    .post-card:nth-child(3) { animation-delay: 0.19s; }
+    .post-card:nth-child(4) { animation-delay: 0.26s; }
+    .post-card:nth-child(5) { animation-delay: 0.33s; }
+
+    /* Like button pulse */
+    .like-btn { transition: transform 0.15s; }
+    .like-btn:active { transform: scale(1.35); }
+
+    /* Comment input */
+    .comment-input {
+        background: transparent !important;
+        border: none !important;
+        color: #f5f5f5 !important;
+        font-size: 0.9rem;
+        box-shadow: none !important;
+    }
+    .comment-input:focus { outline: none !important; }
+
+    /* Avatar gradient ring */
+    .avatar-ring {
+        padding: 2px;
+        background: linear-gradient(135deg, #405de6, #5851db, #833ab4, #c13584, #e1306c, #fd1d1d);
+        border-radius: 50%;
+        display: inline-flex;
+    }
+    .avatar-ring img, .avatar-ring .avatar-placeholder {
+        border: 2px solid #000;
+        border-radius: 50%;
+    }
+    .avatar-placeholder {
+        width: 32px; height: 32px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 14px; font-weight: 700; color: #fff;
+        background: linear-gradient(135deg, #405de6, #c13584);
+    }
+
+    /* Post actions icon hover */
+    .post-action-icon {
+        font-size: 1.55rem;
+        transition: color 0.15s, transform 0.15s;
+        cursor: pointer;
+    }
+    .post-action-icon:hover { color: #aaa; transform: scale(1.1); }
+
+    .liked-heart { color: #e33; animation: heartPop 0.3s ease; }
+    @keyframes heartPop {
+        0%   { transform: scale(1); }
+        50%  { transform: scale(1.4); }
+        100% { transform: scale(1); }
+    }
+
+    /* Story bar */
+    .story-scroll {
+        overflow-x: auto;
+        scrollbar-width: none;
+    }
+    .story-scroll::-webkit-scrollbar { display: none; }
+    .story-item { flex-shrink: 0; text-align: center; cursor: pointer; }
+    .story-item span { font-size: 0.72rem; color: #aaa; display: block; margin-top: 4px; max-width: 62px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+</style>
+
 <div class="container py-4">
     <div class="row justify-content-center">
-        <!-- Feed centralizado tipo Instagram -->
-        <div class="col-12 col-md-8 col-lg-6" style="max-width: 470px;">
-            
-            {% for post in posts %}
-            <div class="card glass-panel rounded-4 mb-4 border-0">
-                <!-- Cabeçalho do Post -->
-                <div class="card-header bg-transparent border-0 d-flex align-items-center p-3">
-                    <div class="me-3">
-                        {% if post.user.profile.avatar %}
-                            <img src="{{ post.user.profile.avatar.url }}" class="rounded-circle border border-secondary" style="width: 32px; height: 32px; object-fit: cover;">
+        <div class="col-12" style="max-width: 470px;">
+
+            <!-- Stories bar (decorativo) -->
+            <div class="glass-panel rounded-4 p-3 mb-4 story-scroll d-flex gap-3">
+                <!-- Próprio usuário -->
+                <div class="story-item">
+                    <div class="avatar-ring">
+                        {% if user.profile.avatar %}
+                            <img src="{{ user.profile.avatar.url }}" style="width:56px;height:56px;object-fit:cover;">
                         {% else %}
-                            <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; font-size: 14px;">
-                                {{ post.user.username|first|upper }}
-                            </div>
+                            <div class="avatar-placeholder" style="width:56px;height:56px;font-size:20px;">{{ user.username|first|upper }}</div>
                         {% endif %}
                     </div>
-                    <div>
-                        <a href="#" class="text-white text-decoration-none fw-bold">{{ post.user.username }}</a>
-                        <span class="text-muted ms-1" style="font-size: 0.85rem;">• {{ post.created_at|timesince }} atrás</span>
+                    <span>{{ user.username }}</span>
+                </div>
+                {% for su in suggested_users %}
+                <div class="story-item">
+                    <div class="avatar-ring">
+                        {% if su.profile.avatar %}
+                            <img src="{{ su.profile.avatar.url }}" style="width:56px;height:56px;object-fit:cover;">
+                        {% else %}
+                            <div class="avatar-placeholder" style="width:56px;height:56px;font-size:20px;">{{ su.username|first|upper }}</div>
+                        {% endif %}
                     </div>
-                    <div class="ms-auto">
-                        <i class="bi bi-three-dots"></i>
+                    <span>{{ su.username }}</span>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Feed de Posts -->
+            {% for post in posts %}
+            <div class="card glass-panel rounded-4 mb-4 border-0 post-card" id="post-{{ post.id }}">
+
+                <!-- Cabeçalho do Post -->
+                <div class="card-header bg-transparent border-0 d-flex align-items-center p-3 gap-3">
+                    <div class="avatar-ring">
+                        {% if post.user.profile.avatar %}
+                            <img src="{{ post.user.profile.avatar.url }}" style="width:32px;height:32px;object-fit:cover;">
+                        {% else %}
+                            <div class="avatar-placeholder" style="width:32px;height:32px;">{{ post.user.username|first|upper }}</div>
+                        {% endif %}
                     </div>
+                    <div class="flex-grow-1">
+                        <a href="#" class="text-white text-decoration-none fw-bold" style="font-size:0.92rem;">{{ post.user.username }}</a>
+                        <span class="text-muted d-block" style="font-size:0.77rem;">{{ post.created_at|timesince }} atrás</span>
+                    </div>
+                    <i class="bi bi-three-dots text-muted" style="cursor:pointer;"></i>
                 </div>
 
-                <!-- Mídia do Post (Full width) -->
+                <!-- Mídia do Post -->
                 {% if post.image %}
-                <img src="{{ post.image.url }}" class="img-fluid w-100" alt="Post" style="max-height: 585px; object-fit: cover; border-radius: 4px;">
+                <img src="{{ post.image.url }}" class="img-fluid w-100" alt="Post de {{ post.user.username }}"
+                     style="max-height: 585px; object-fit: cover;">
                 {% endif %}
-                
+
                 {% if post.video %}
-                <video src="{{ post.video.url }}" controls class="w-100" style="max-height: 585px; object-fit: contain; background: #111;"></video>
+                <video src="{{ post.video.url }}" controls class="w-100"
+                       style="max-height: 585px; object-fit: contain; background: #0a0a0a;"></video>
                 {% endif %}
-                
+
                 {% if post.audio %}
-                <div class="p-4 bg-transparent text-center border-top border-bottom" style="border-color: rgba(255,255,255,0.08) !important;">
-                    <i class="bi bi-music-note-beamed text-white fs-1 mb-3 d-block"></i>
+                <div class="p-4 text-center" style="background: rgba(0,149,246,0.06); border-top: 1px solid rgba(255,255,255,0.07); border-bottom: 1px solid rgba(255,255,255,0.07);">
+                    <i class="bi bi-music-note-beamed text-spider-blue fs-1 mb-3 d-block"></i>
                     <audio src="{{ post.audio.url }}" controls class="w-100"></audio>
                 </div>
                 {% endif %}
 
-                <!-- Ações e Curtidas -->
+                <!-- Ações -->
                 <div class="card-body bg-transparent p-3 pb-2 border-0">
-                    <div class="d-flex mb-2 fs-4">
-                        <a href="{% url 'like_post' post.id %}" class="text-white text-decoration-none me-3">
-                            <i class="bi bi-heart{% if user in post.likes.all %}-fill text-danger{% endif %}"></i>
+                    <div class="d-flex align-items-center mb-2 gap-3">
+                        <a href="{% url 'like_post' post.id %}" class="text-decoration-none like-btn" title="Curtir">
+                            {% if user in post.likes.all %}
+                                <i class="bi bi-heart-fill liked-heart post-action-icon"></i>
+                            {% else %}
+                                <i class="bi bi-heart text-white post-action-icon"></i>
+                            {% endif %}
                         </a>
-                        <a href="#" class="text-white text-decoration-none me-3" data-bs-toggle="collapse" data-bs-target="#comments-{{ post.id }}">
-                            <i class="bi bi-chat"></i>
+                        <a href="#" class="text-white text-decoration-none"
+                           data-bs-toggle="collapse" data-bs-target="#comments-{{ post.id }}" title="Comentar">
+                            <i class="bi bi-chat post-action-icon"></i>
                         </a>
-                        <a href="javascript:void(0);" onclick="navigator.clipboard.writeText(window.location.origin + '{% url 'home' %}#post-{{ post.id }}').then(() => alert('Link copiado!'));" class="text-white text-decoration-none" title="Compartilhar">
-                            <i class="bi bi-send"></i>
+                        <a href="javascript:void(0);"
+                           onclick="navigator.clipboard.writeText(window.location.origin + '#post-{{ post.id }}').then(() => { this.querySelector('i').className='bi bi-check2 post-action-icon text-spider-blue'; setTimeout(() => this.querySelector('i').className='bi bi-send post-action-icon text-white', 1500); })"
+                           class="text-white text-decoration-none" title="Compartilhar">
+                            <i class="bi bi-send post-action-icon"></i>
                         </a>
-                        <a href="#" class="text-white text-decoration-none ms-auto">
-                            <i class="bi bi-bookmark"></i>
+                        <a href="#" class="text-white text-decoration-none ms-auto" title="Salvar">
+                            <i class="bi bi-bookmark post-action-icon"></i>
                         </a>
                     </div>
-                    
+
                     {% if post.likes.count > 0 %}
-                    <p class="fw-bold mb-1">{{ post.likes.count }} curtidas</p>
+                    <p class="fw-bold mb-1" style="font-size:0.92rem;">
+                        {{ post.likes.count }} curtida{% if post.likes.count != 1 %}s{% endif %}
+                    </p>
                     {% endif %}
 
-                    <!-- Legenda -->
                     {% if post.content %}
-                    <p class="mb-1">
+                    <p class="mb-1" style="font-size:0.92rem;">
                         <a href="#" class="text-white text-decoration-none fw-bold me-1">{{ post.user.username }}</a>
                         <span>{{ post.content }}</span>
                     </p>
                     {% endif %}
 
-                    <!-- Botão para ver todos os comentários -->
                     {% if post.comments.count > 0 %}
-                    <a href="#" class="text-muted text-decoration-none d-block mb-2" data-bs-toggle="collapse" data-bs-target="#comments-{{ post.id }}">
-                        Ver todos os {{ post.comments.count }} comentários
+                    <a href="#" class="text-muted text-decoration-none d-block mb-2" style="font-size:0.88rem;"
+                       data-bs-toggle="collapse" data-bs-target="#comments-{{ post.id }}">
+                        Ver todos os {{ post.comments.count }} comentário{% if post.comments.count != 1 %}s{% endif %}
                     </a>
                     {% endif %}
 
-                    <!-- Seção de Comentários Colapsável -->
+                    <!-- Comentários -->
                     <div class="collapse" id="comments-{{ post.id }}">
                         {% for comment in post.comments.all %}
-                        <p class="mb-1">
+                        <p class="mb-1" style="font-size:0.88rem;">
                             <a href="#" class="text-white text-decoration-none fw-bold me-1">{{ comment.user.username }}</a>
                             <span>{{ comment.content }}</span>
                         </p>
                         {% endfor %}
                     </div>
-                    
-                    <form action="{% url 'comment_post' post.id %}" method="post" class="mt-2 d-flex align-items-center border-top border-secondary pt-2">
+
+                    <!-- Adicionar comentário -->
+                    <form action="{% url 'comment_post' post.id %}" method="post"
+                          class="d-flex align-items-center border-top mt-2 pt-2"
+                          style="border-color: rgba(255,255,255,0.08) !important;">
                         {% csrf_token %}
-                        <input type="text" name="content" class="form-control bg-transparent border-0 text-light px-0 shadow-none" placeholder="Adicione um comentário..." required style="font-size: 0.9rem;">
-                        <button type="submit" class="btn btn-link text-spider-blue text-decoration-none fw-bold px-0 shadow-none">Publicar</button>
+                        <input type="text" name="content" class="form-control comment-input flex-grow-1"
+                               placeholder="Adicione um comentário...">
+                        <button type="submit" class="btn btn-link text-spider-blue text-decoration-none fw-bold px-2 shadow-none"
+                                style="white-space: nowrap; font-size: 0.88rem;">Publicar</button>
                     </form>
                 </div>
             </div>
             {% empty %}
-            <div class="text-center p-5 mt-5">
-                <div class="rounded-circle border border-2 border-secondary d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+            <div class="text-center py-5 mt-4 glass-panel rounded-4">
+                <div class="rounded-circle border border-2 border-secondary d-inline-flex align-items-center justify-content-center mb-4"
+                     style="width: 88px; height: 88px;">
                     <i class="bi bi-camera fs-1 text-white"></i>
                 </div>
-                <h3 class="text-white">Nenhuma publicação ainda</h3>
-                <p class="text-muted">As fotos e vídeos que seus amigos compartilharem aparecerão aqui.</p>
-                <a href="{% url 'descobrir' %}" class="btn btn-spider mt-2">Encontrar amigos</a>
+                <h4 class="text-white fw-bold mb-2">Compartilhe fotos e vídeos</h4>
+                <p class="text-muted mb-4">Siga pessoas para ver publicações aqui, ou crie sua primeira publicação!</p>
+                <div class="d-flex gap-3 justify-content-center flex-wrap">
+                    <a href="{% url 'descobrir' %}" class="btn btn-spider px-4 rounded-3 fw-bold">
+                        <i class="bi bi-search me-2"></i>Encontrar pessoas
+                    </a>
+                    <a href="#" class="btn btn-outline-light px-4 rounded-3 fw-bold"
+                       data-bs-toggle="modal" data-bs-target="#createPostModal">
+                        <i class="bi bi-plus-circle me-2"></i>Criar publicação
+                    </a>
+                </div>
             </div>
             {% endfor %}
+
         </div>
     </div>
 </div>
+
 {% else %}
-<div class="container d-flex flex-column justify-content-center align-items-center min-vh-100 bg-transparent">
-    <div class="text-center p-5 glass-panel rounded-4" style="max-width: 400px; width: 100%;">
-        <h1 class="display-3 font-monospace fw-bold text-white mb-4">spider</h1>
-        <p class="text-muted mb-4">Cadastre-se para ver fotos e vídeos dos seus amigos.</p>
-        <a href="{% url 'login' %}" class="btn btn-spider w-100 py-2 fw-bold rounded-3 mb-3">Entrar</a>
+<!-- Landing page para não-autenticados -->
+<div class="d-flex flex-column justify-content-center align-items-center min-vh-100">
+    <div class="text-center p-5 glass-panel rounded-4" style="max-width: 420px; width: 90%;">
+        <h1 class="display-3 fw-bold text-white mb-2" style="font-family: cursive; letter-spacing: -2px;">spider</h1>
+        <p class="text-muted mb-4">Conecte-se com seus amigos e compartilhe momentos incríveis.</p>
+        <a href="{% url 'login' %}" class="btn btn-spider w-100 py-2 fw-bold rounded-3 mb-3 fs-6">Entrar</a>
         <div class="d-flex align-items-center my-3">
-            <div class="flex-grow-1 border-top border-secondary"></div>
-            <span class="mx-3 text-muted fw-bold">OU</span>
-            <div class="flex-grow-1 border-top border-secondary"></div>
+            <div class="flex-grow-1" style="border-top: 1px solid #363636;"></div>
+            <span class="mx-3 text-muted fw-bold" style="font-size: 0.85rem;">OU</span>
+            <div class="flex-grow-1" style="border-top: 1px solid #363636;"></div>
         </div>
-        <p class="text-white mt-4 mb-0">Não tem uma conta? <a href="{% url 'register' %}" class="text-spider-blue text-decoration-none fw-bold">Cadastre-se</a></p>
+        <p class="text-white mb-0" style="font-size: 0.92rem;">
+            Não tem conta?
+            <a href="{% url 'register' %}" class="text-spider-blue text-decoration-none fw-bold">Cadastre-se</a>
+        </p>
     </div>
 </div>
 {% endif %}

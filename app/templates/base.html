@@ -31,10 +31,13 @@
         }
 
         /* Todo o conteúdo deve ficar acima do canvas */
-        .sidebar, .main-content, .modal {
+        .sidebar, .main-content {
             position: relative;
             z-index: 1;
         }
+        /* Garantir que o modal Bootstrap fique sempre acima de tudo */
+        .modal { z-index: 1055 !important; }
+        .modal-backdrop { z-index: 1050 !important; }
 
         /* Glassmorphism panel for cards and sidebars */
         .glass-panel {
@@ -229,46 +232,406 @@
 
     <!-- Modal para Criar Postagem -->
     {% if user.is_authenticated %}
+    <style>
+        #createPostModal .modal-content {
+            background: #1a1a1a;
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+        #createPostModal .modal-dialog {
+            max-width: 560px;
+        }
+        .post-media-drop {
+            border: 2px dashed rgba(255,255,255,0.18);
+            border-radius: 12px;
+            min-height: 160px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: border-color 0.25s, background 0.25s;
+            background: rgba(255,255,255,0.03);
+            position: relative;
+        }
+        .post-media-drop:hover, .post-media-drop.drag-over {
+            border-color: #0095f6;
+            background: rgba(0, 149, 246, 0.07);
+        }
+        .post-media-drop {
+            /* pointer-events only on the div itself, not children */
+        }
+        .hidden-file-input {
+            display: none;
+        }
+        .media-tabs .nav-link {
+            color: #aaa;
+            border: none;
+            border-bottom: 2px solid transparent;
+            background: none;
+            padding: 8px 18px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            border-radius: 0;
+            transition: color 0.2s, border-color 0.2s;
+        }
+        .media-tabs .nav-link.active {
+            color: #fff;
+            border-bottom-color: #0095f6;
+            background: none;
+        }
+        .media-tabs .nav-link i {
+            font-size: 1rem;
+        }
+        .char-counter {
+            font-size: 0.75rem;
+            color: #666;
+            text-align: right;
+            margin-top: 4px;
+            transition: color 0.2s;
+        }
+        .char-counter.warning { color: #f0a500; }
+        .char-counter.danger  { color: #e44; }
+        #post-caption {
+            resize: none;
+            background: transparent !important;
+            border: none !important;
+            color: #f5f5f5 !important;
+            font-size: 0.97rem;
+            box-shadow: none !important;
+            min-height: 80px;
+        }
+        #post-caption:focus { outline: none; }
+        .media-preview-wrap {
+            position: relative;
+            border-radius: 10px;
+            overflow: hidden;
+            background: #111;
+            margin-top: 10px;
+            display: none;
+        }
+        .media-preview-wrap img,
+        .media-preview-wrap video {
+            width: 100%;
+            max-height: 280px;
+            object-fit: cover;
+            display: block;
+        }
+        .media-preview-wrap audio {
+            width: 100%;
+        }
+        .media-preview-wrap .remove-media-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(0,0,0,0.7);
+            border: none;
+            color: #fff;
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .media-preview-wrap .remove-media-btn:hover { background: rgba(200,0,0,0.85); }
+        .audio-preview-inner {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 24px 16px 16px;
+        }
+        .audio-preview-inner i {
+            font-size: 2.5rem;
+            color: #0095f6;
+            margin-bottom: 10px;
+        }
+        .audio-preview-inner .audio-filename {
+            font-size: 0.8rem;
+            color: #aaa;
+            margin-bottom: 10px;
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .btn-share-post {
+            background: linear-gradient(135deg, #0095f6, #1877f2);
+            color: #fff;
+            font-weight: 700;
+            border: none;
+            padding: 12px;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: opacity 0.2s, transform 0.15s;
+        }
+        .btn-share-post:hover:not(:disabled) { opacity: 0.88; transform: scale(1.01); }
+        .btn-share-post:disabled { opacity: 0.45; cursor: not-allowed; }
+        .post-divider {
+            border-color: rgba(255,255,255,0.1) !important;
+        }
+    </style>
+
     <div class="modal fade" id="createPostModal" tabindex="-1" aria-labelledby="createPostModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
-                <div class="modal-header border-bottom border-secondary">
-                    <h5 class="modal-title fw-bold text-center w-100" id="createPostModalLabel">Criar nova publicação</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+
+                <!-- Header -->
+                <div class="modal-header border-bottom post-divider px-4 py-3">
+                    <div class="w-100 text-center position-relative">
+                        <h5 class="modal-title fw-bold mb-0" id="createPostModalLabel" style="font-size:1rem; letter-spacing:0.3px;">
+                            Criar nova publicação
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white position-absolute top-50 end-0 translate-middle-y" data-bs-dismiss="modal" aria-label="Close" style="font-size:0.75rem;"></button>
+                    </div>
                 </div>
-                <form action="{% url 'criar_post' %}" method="post" enctype="multipart/form-data">
+
+                <form action="{% url 'criar_post' %}" method="post" enctype="multipart/form-data" id="createPostForm">
                     {% csrf_token %}
-                    <div class="modal-body p-4">
-                        <div class="d-flex align-items-center mb-3">
+                    <div class="modal-body p-0">
+
+                        <!-- Author row -->
+                        <div class="d-flex align-items-center px-4 pt-4 pb-2 gap-3">
                             {% if user.profile.avatar %}
-                                <img src="{{ user.profile.avatar.url }}" class="rounded-circle me-2" style="width: 30px; height: 30px; object-fit: cover;">
+                                <img src="{{ user.profile.avatar.url }}" class="rounded-circle flex-shrink-0" style="width:38px;height:38px;object-fit:cover;border:2px solid #0095f6;">
                             {% else %}
-                                <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center me-2" style="width: 30px; height: 30px;">
+                                <div class="rounded-circle bg-gradient flex-shrink-0 d-flex align-items-center justify-content-center fw-bold" style="width:38px;height:38px;background:linear-gradient(135deg,#405de6,#5851db,#833ab4,#c13584,#e1306c,#fd1d1d);font-size:1rem;color:#fff;">
                                     {{ user.username|first|upper }}
                                 </div>
                             {% endif %}
-                            <span class="fw-bold">{{ user.username }}</span>
+                            <div>
+                                <span class="fw-bold d-block" style="font-size:0.95rem;">{{ user.username }}</span>
+                                <span class="text-muted" style="font-size:0.75rem;">Publicação pública</span>
+                            </div>
                         </div>
-                        <textarea name="content" class="form-control border-0 mb-3" rows="3" placeholder="Escreva uma legenda..." style="box-shadow: none;"></textarea>
-                        
-                        <div class="mb-2">
-                            <label class="form-label small text-muted">Mídia (Opcional)</label>
-                            <input type="file" name="image" class="form-control mb-2" accept="image/*" title="Foto">
-                            <input type="file" name="video" class="form-control mb-2" accept="video/*" title="Vídeo">
-                            <input type="file" name="audio" class="form-control" accept="audio/*" title="Áudio/Música">
+
+                        <!-- Caption -->
+                        <div class="px-4 pb-2">
+                            <textarea
+                                id="post-caption"
+                                name="content"
+                                class="form-control"
+                                maxlength="2200"
+                                placeholder="Escreva uma legenda, use # hashtags..."
+                            ></textarea>
+                            <div class="char-counter" id="caption-counter">0 / 2200</div>
                         </div>
-                    </div>
-                    <div class="modal-footer border-top border-secondary">
-                        <button type="submit" class="btn btn-spider w-100 rounded-pill">Compartilhar</button>
+
+                        <hr class="post-divider mx-4 my-0">
+
+                        <!-- Media type tabs -->
+                        <div class="px-4 pt-3 pb-1">
+                            <p class="text-muted mb-2" style="font-size:0.78rem;text-transform:uppercase;letter-spacing:1px;font-weight:600;">Adicionar mídia</p>
+                            <ul class="nav media-tabs border-bottom post-divider mb-3" id="mediaTypeTabs">
+                                <li class="nav-item">
+                                    <button class="nav-link active" data-media-type="image" type="button">
+                                        <i class="bi bi-image me-1"></i> Foto
+                                    </button>
+                                </li>
+                                <li class="nav-item">
+                                    <button class="nav-link" data-media-type="video" type="button">
+                                        <i class="bi bi-camera-video me-1"></i> Vídeo
+                                    </button>
+                                </li>
+                                <li class="nav-item">
+                                    <button class="nav-link" data-media-type="audio" type="button">
+                                        <i class="bi bi-music-note-beamed me-1"></i> Áudio
+                                    </button>
+                                </li>
+                            </ul>
+
+                            <!-- Inputs de arquivo ocultos (fora da drop zone para não bloquear eventos) -->
+                            <input type="file" name="image" id="input-image" accept="image/*" class="hidden-file-input">
+                            <input type="file" name="video" id="input-video" accept="video/*" class="hidden-file-input">
+                            <input type="file" name="audio" id="input-audio" accept="audio/*" class="hidden-file-input">
+
+                            <!-- Drop zones (only one shown at a time) -->
+                            <!-- Image -->
+                            <div class="media-tab-panel" id="panel-image">
+                                <div class="post-media-drop" id="drop-image">
+                                    <i class="bi bi-cloud-arrow-up fs-1 text-muted mb-2"></i>
+                                    <p class="text-muted mb-0" style="font-size:0.88rem;">Arraste uma foto ou <span class="text-spider-blue fw-bold" style="cursor:pointer;">clique para selecionar</span></p>
+                                    <p class="text-muted mb-0" style="font-size:0.75rem;">JPG, PNG, GIF, WEBP</p>
+                                </div>
+                                <div class="media-preview-wrap" id="preview-image">
+                                    <button type="button" class="remove-media-btn" onclick="clearMedia('image')"><i class="bi bi-x"></i></button>
+                                    <img id="preview-image-el" src="" alt="Preview">
+                                </div>
+                            </div>
+
+                            <!-- Video -->
+                            <div class="media-tab-panel d-none" id="panel-video">
+                                <div class="post-media-drop" id="drop-video">
+                                    <i class="bi bi-film fs-1 text-muted mb-2"></i>
+                                    <p class="text-muted mb-0" style="font-size:0.88rem;">Arraste um vídeo ou <span class="text-spider-blue fw-bold" style="cursor:pointer;">clique para selecionar</span></p>
+                                    <p class="text-muted mb-0" style="font-size:0.75rem;">MP4, MOV, AVI, WEBM</p>
+                                </div>
+                                <div class="media-preview-wrap" id="preview-video">
+                                    <button type="button" class="remove-media-btn" onclick="clearMedia('video')"><i class="bi bi-x"></i></button>
+                                    <video id="preview-video-el" controls></video>
+                                </div>
+                            </div>
+
+                            <!-- Audio -->
+                            <div class="media-tab-panel d-none" id="panel-audio">
+                                <div class="post-media-drop" id="drop-audio">
+                                    <i class="bi bi-music-note-list fs-1 text-muted mb-2"></i>
+                                    <p class="text-muted mb-0" style="font-size:0.88rem;">Arraste um áudio ou <span class="text-spider-blue fw-bold" style="cursor:pointer;">clique para selecionar</span></p>
+                                    <p class="text-muted mb-0" style="font-size:0.75rem;">MP3, WAV, OGG, M4A</p>
+                                </div>
+                                <div class="media-preview-wrap" id="preview-audio">
+                                    <button type="button" class="remove-media-btn" onclick="clearMedia('audio')"><i class="bi bi-x"></i></button>
+                                    <div class="audio-preview-inner">
+                                        <i class="bi bi-music-note-beamed"></i>
+                                        <span class="audio-filename" id="audio-filename"></span>
+                                        <audio id="preview-audio-el" controls></audio>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="px-4 pb-4 pt-3">
+                            <button type="submit" class="btn btn-share-post w-100" id="shareBtn">
+                                <i class="bi bi-send-fill me-2"></i>Compartilhar publicação
+                            </button>
+                        </div>
                     </div>
                 </form>
+
             </div>
         </div>
     </div>
+
     {% endif %}
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Script do Modal de Criação de Post (roda após Bootstrap) -->
+    {% if user.is_authenticated %}
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+
+        // ── Tabs de tipo de mídia ─────────────────────────────────────────────
+        const tabBtns = document.querySelectorAll('[data-media-type]');
+        const panels  = document.querySelectorAll('.media-tab-panel');
+
+        tabBtns.forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                tabBtns.forEach(function(b) { b.classList.remove('active'); });
+                btn.classList.add('active');
+                var type = btn.dataset.mediaType;
+                panels.forEach(function(p) { p.classList.add('d-none'); });
+                document.getElementById('panel-' + type).classList.remove('d-none');
+            });
+        });
+
+        // ── Contador de caracteres ────────────────────────────────────────────
+        var caption = document.getElementById('post-caption');
+        var counter = document.getElementById('caption-counter');
+        if (caption) {
+            caption.addEventListener('input', function() {
+                var len = caption.value.length;
+                counter.textContent = len + ' / 2200';
+                counter.className = 'char-counter' + (len > 2000 ? ' danger' : len > 1800 ? ' warning' : '');
+            });
+        }
+
+        // ── Drop zones + seletor de arquivo ───────────────────────────────────
+        ['image', 'video', 'audio'].forEach(function(type) {
+            var dropEl = document.getElementById('drop-' + type);
+            var input  = document.getElementById('input-' + type);
+            if (!dropEl || !input) return;
+
+            // Clicar na zona abre o seletor de arquivo
+            dropEl.addEventListener('click', function() {
+                input.click();
+            });
+
+            // Drag & drop
+            dropEl.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                dropEl.classList.add('drag-over');
+            });
+            dropEl.addEventListener('dragleave', function(e) {
+                if (!dropEl.contains(e.relatedTarget)) {
+                    dropEl.classList.remove('drag-over');
+                }
+            });
+            dropEl.addEventListener('drop', function(e) {
+                e.preventDefault();
+                dropEl.classList.remove('drag-over');
+                var file = e.dataTransfer.files[0];
+                if (file) applyFile(type, file);
+            });
+
+            // Quando arquivo selecionado via input
+            input.addEventListener('change', function() {
+                if (input.files[0]) applyFile(type, input.files[0]);
+            });
+        });
+
+        function applyFile(type, file) {
+            var url       = URL.createObjectURL(file);
+            var dropEl    = document.getElementById('drop-' + type);
+            var previewEl = document.getElementById('preview-' + type);
+            var input     = document.getElementById('input-' + type);
+
+            if (type === 'image') {
+                document.getElementById('preview-image-el').src = url;
+            } else if (type === 'video') {
+                document.getElementById('preview-video-el').src = url;
+            } else if (type === 'audio') {
+                document.getElementById('preview-audio-el').src = url;
+                document.getElementById('audio-filename').textContent = file.name;
+            }
+            dropEl.style.display = 'none';
+            previewEl.style.display = 'block';
+
+            // Para drag & drop: atribuir arquivo ao input
+            if (input && (!input.files || !input.files.length)) {
+                try {
+                    var dt = new DataTransfer();
+                    dt.items.add(file);
+                    input.files = dt.files;
+                } catch(err) {}
+            }
+        }
+
+        window.clearMedia = function(type) {
+            var dropEl    = document.getElementById('drop-' + type);
+            var previewEl = document.getElementById('preview-' + type);
+            var input     = document.getElementById('input-' + type);
+            if (type === 'image')      { document.getElementById('preview-image-el').src = ''; }
+            else if (type === 'video') { document.getElementById('preview-video-el').src = ''; }
+            else if (type === 'audio') {
+                document.getElementById('preview-audio-el').src = '';
+                document.getElementById('audio-filename').textContent = '';
+            }
+            if (input) input.value = '';
+            dropEl.style.display = '';
+            previewEl.style.display = 'none';
+        };
+
+        // ── Reset ao fechar o modal ───────────────────────────────────────────
+        var modal = document.getElementById('createPostModal');
+        if (modal) {
+            modal.addEventListener('hidden.bs.modal', function() {
+                document.getElementById('createPostForm').reset();
+                ['image', 'video', 'audio'].forEach(function(t) { window.clearMedia(t); });
+                if (caption) {
+                    caption.value = '';
+                    counter.textContent = '0 / 2200';
+                    counter.className = 'char-counter';
+                }
+            });
+        }
+    });
+    </script>
+    {% endif %}
 
     <!-- Partículas estrelares -->
     <canvas id="particle-canvas"></canvas>
