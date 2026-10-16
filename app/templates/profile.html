@@ -1,114 +1,347 @@
 {% extends 'base.html' %}
 
-{% block title %}Perfil - CONNECT{% endblock %}
+{% block title %}{{ user.username }} (@{{ user.username|lower }}) · spider{% endblock %}
 
 {% block extra_css %}
 <style>
-    .profile-header-card {
-        background: rgba(25, 25, 35, 0.6);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.05);
-        border-radius: 20px;
-        overflow: hidden;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    /* ── Estilo do Header de Perfil Redondo ── */
+    .profile-header-wrap {
+        background: rgba(14, 14, 22, 0.78);
+        backdrop-filter: blur(24px);
+        -webkit-backdrop-filter: blur(24px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 24px;
+        padding: 32px 28px;
+        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+        margin-bottom: 24px;
     }
-    
-    .profile-cover {
-        height: 250px;
-        background: linear-gradient(135deg, #0d6efd, #6610f2);
+
+    /* Foto redonda estilo Instagram/TikTok */
+    .profile-photo-container {
         position: relative;
+        display: inline-block;
+        flex-shrink: 0;
     }
-    
-    .profile-avatar-wrapper {
-        position: absolute;
-        bottom: -50px;
-        left: 50%;
-        transform: translateX(-50%);
-    }
-    
-    .profile-avatar-large {
-        width: 120px;
-        height: 120px;
+
+    .profile-photo-ring {
+        width: 116px;
+        height: 116px;
         border-radius: 50%;
-        border: 4px solid #0b0b0f;
-        background-color: #212529;
+        padding: 3px;
+        background: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
+        box-shadow: 0 0 25px rgba(99, 102, 241, 0.35);
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 3rem;
-        font-weight: bold;
-        color: white;
-        box-shadow: 0 0 20px rgba(13, 110, 253, 0.4);
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
     }
-    
-    .profile-info {
-        padding-top: 60px;
-        text-align: center;
-        color: white;
+    .profile-photo-ring:hover {
+        transform: scale(1.03);
+        box-shadow: 0 0 35px rgba(168, 85, 247, 0.5);
     }
-    
-    .stat-box {
-        text-align: center;
-        padding: 15px;
-        background: rgba(255, 255, 255, 0.03);
-        border-radius: 15px;
-        border: 1px solid rgba(255, 255, 255, 0.05);
-        transition: transform 0.3s ease, background 0.3s ease;
+
+    .profile-photo-circle {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        border: 3px solid #0b0b14;
+        background: linear-gradient(135deg, #181829, #0e1628);
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #fff;
     }
-    
-    .stat-box:hover {
-        transform: translateY(-5px);
-        background: rgba(255, 255, 255, 0.05);
+    .profile-photo-circle img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
     }
-    
-    .stat-number {
-        font-size: 1.5rem;
-        font-weight: bold;
-        color: #0d6efd;
-    }
-    
-    .stat-label {
+
+    /* Badge de alterar foto */
+    .photo-edit-badge {
+        position: absolute;
+        bottom: 4px;
+        right: 4px;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        color: #fff;
+        border: 2px solid #0b0b14;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         font-size: 0.85rem;
-        color: rgba(255, 255, 255, 0.6);
-        text-transform: uppercase;
-        letter-spacing: 1px;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+        transition: transform 0.15s, background 0.2s;
+    }
+    .photo-edit-badge:hover {
+        transform: scale(1.12);
+        background: linear-gradient(135deg, #4f46e5, #7c3aed);
+        color: #fff;
     }
 
-    .content-card {
-        background: rgba(25, 25, 35, 0.6);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.05);
-        border-radius: 20px;
-        padding: 25px;
-        margin-top: 20px;
-        color: white;
+    /* Informações do perfil */
+    .profile-info-col {
+        flex: 1;
+        min-width: 260px;
     }
 
-    .nav-pills-custom .nav-link {
-        color: rgba(255, 255, 255, 0.7);
-        border-radius: 30px;
-        padding: 8px 20px;
-        margin: 0 5px;
-        transition: all 0.3s ease;
+    .profile-username-title {
+        font-size: 1.45rem;
+        font-weight: 700;
+        color: #fff;
+        letter-spacing: -0.3px;
+        margin: 0;
+    }
+    .profile-tag {
+        font-size: 0.85rem;
+        color: rgba(255, 255, 255, 0.45);
     }
 
-    .nav-pills-custom .nav-link.active {
-        background-color: rgba(13, 110, 253, 0.2);
-        color: #0d6efd;
+    /* Botões do cabeçalho */
+    .btn-profile-primary {
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        color: #fff;
+        font-size: 0.84rem;
         font-weight: 600;
+        padding: 7px 18px;
+        border-radius: 20px;
+        text-decoration: none;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .btn-profile-primary:hover {
+        background: rgba(255, 255, 255, 0.16);
+        border-color: rgba(255, 255, 255, 0.35);
+        color: #fff;
     }
 
-    .nav-pills-custom .nav-link:hover:not(.active) {
-        background-color: rgba(255, 255, 255, 0.05);
-        color: white;
+    .btn-profile-create {
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        border: none;
+        color: #fff;
+        font-size: 0.84rem;
+        font-weight: 600;
+        padding: 7px 18px;
+        border-radius: 20px;
+        text-decoration: none;
+        box-shadow: 0 4px 14px rgba(99, 102, 241, 0.3);
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .btn-profile-create:hover {
+        opacity: 0.92;
+        transform: translateY(-1px);
+        box-shadow: 0 6px 18px rgba(99, 102, 241, 0.45);
+        color: #fff;
     }
 
-    .post-item {
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        padding: 15px 0;
+    .btn-profile-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        color: rgba(255, 255, 255, 0.7);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.95rem;
+        text-decoration: none;
+        transition: all 0.2s;
     }
-    .post-item:last-child {
-        border-bottom: none;
+    .btn-profile-icon:hover {
+        background: rgba(255, 255, 255, 0.12);
+        color: #fff;
+    }
+
+    /* Estatísticas horizontais (estilo Instagram) */
+    .profile-stats-row {
+        display: flex;
+        gap: 28px;
+        margin: 16px 0 14px;
+    }
+    .stat-badge {
+        font-size: 0.94rem;
+        color: rgba(255, 255, 255, 0.7);
+        cursor: default;
+    }
+    .stat-badge strong {
+        color: #fff;
+        font-size: 1.05rem;
+        font-weight: 700;
+        margin-right: 4px;
+    }
+
+    /* Bio e detalhes */
+    .profile-bio-text {
+        font-size: 0.92rem;
+        color: rgba(255, 255, 255, 0.85);
+        line-height: 1.5;
+        margin-bottom: 10px;
+        max-width: 580px;
+    }
+    .profile-meta-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        font-size: 0.82rem;
+        color: rgba(255, 255, 255, 0.5);
+    }
+    .profile-meta-tags a {
+        color: #818cf8;
+        text-decoration: none;
+    }
+    .profile-meta-tags a:hover {
+        text-decoration: underline;
+    }
+
+    /* ── Caixa de Post Rápido Funcional ── */
+    .quick-create-card {
+        background: rgba(14, 14, 22, 0.78);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 20px;
+        padding: 18px 22px;
+        margin-bottom: 22px;
+    }
+    .quick-create-input {
+        background: rgba(255, 255, 255, 0.05) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        color: #fff !important;
+        border-radius: 14px;
+        padding: 10px 16px;
+        font-size: 0.9rem;
+        resize: none;
+    }
+    .quick-create-input:focus {
+        background: rgba(255, 255, 255, 0.08) !important;
+        border-color: rgba(99, 102, 241, 0.5) !important;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15) !important;
+    }
+
+    /* ── Abas do Perfil ── */
+    .profile-tabs-nav {
+        display: flex;
+        justify-content: center;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        margin-bottom: 24px;
+        gap: 12px;
+    }
+    .profile-tab-button {
+        background: none;
+        border: none;
+        border-bottom: 2px solid transparent;
+        color: rgba(255, 255, 255, 0.45);
+        font-size: 0.86rem;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        padding: 12px 24px;
+        cursor: pointer;
+        transition: all 0.2s;
+        margin-bottom: -1px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .profile-tab-button:hover {
+        color: rgba(255, 255, 255, 0.8);
+    }
+    .profile-tab-button.active {
+        color: #fff;
+        border-bottom-color: #6366f1;
+    }
+
+    /* ── Card de Post do Perfil ── */
+    .profile-post-card {
+        background: rgba(14, 14, 22, 0.78);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 20px;
+        padding: 20px;
+        margin-bottom: 18px;
+        transition: border-color 0.2s;
+    }
+    .profile-post-card:hover {
+        border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    /* Grade de Mídia (Estilo Instagram) */
+    .media-grid-item {
+        position: relative;
+        aspect-ratio: 1 / 1;
+        border-radius: 12px;
+        overflow: hidden;
+        background: #111;
+        border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .media-grid-item img, .media-grid-item video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+    .media-grid-item:hover img, .media-grid-item:hover video {
+        transform: scale(1.04);
+    }
+    .media-grid-overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 16px;
+        color: #fff;
+        font-weight: 700;
+        opacity: 0;
+        transition: opacity 0.2s ease;
+    }
+    .media-grid-item:hover .media-grid-overlay {
+        opacity: 1;
+    }
+
+    /* Modais Dark */
+    .modal-dark-glass {
+        background: #11111c !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border-radius: 22px !important;
+        color: #fff;
+    }
+    .modal-dark-glass .modal-header {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        padding: 18px 24px;
+    }
+    .modal-dark-glass .modal-footer {
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        padding: 14px 24px;
+    }
+    .btn-save-glow {
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        border: none;
+        color: #fff;
+        padding: 8px 24px;
+        border-radius: 20px;
+        font-weight: 600;
+        transition: opacity 0.2s, transform 0.15s;
+    }
+    .btn-save-glow:hover {
+        opacity: 0.9;
+        transform: scale(1.02);
+        color: #fff;
     }
 </style>
 {% endblock %}
@@ -116,282 +349,478 @@
 {% block content %}
 <div class="container py-4">
     <div class="row justify-content-center">
-        <div class="col-lg-10">
-            
-            <!-- Header do Perfil -->
-            <div class="profile-header-card mb-4">
-                <div class="profile-cover" {% if user.is_authenticated and user.profile.cover %}style="background: url('{{ user.profile.cover.url }}') center/cover;"{% endif %}>
-                    <button class="btn btn-sm btn-dark position-absolute top-0 end-0 m-3 rounded-pill" style="opacity: 0.8;" data-bs-toggle="modal" data-bs-target="#editCoverModal">
-                        <i class="bi bi-camera"></i> Editar Capa
-                    </button>
-                    
-                    <div class="profile-avatar-wrapper">
-                        <div class="profile-avatar-large overflow-hidden">
-                            {% if user.is_authenticated %}
+        <div class="col-lg-9 col-xl-8">
+
+            <!-- ── CABEÇALHO DO PERFIL (FOTO REDONDA DE REDE SOCIAL) ── -->
+            <div class="profile-header-wrap">
+                <div class="d-flex flex-column flex-sm-row align-items-center align-items-sm-start gap-4">
+
+                    <!-- Foto de Perfil Redonda -->
+                    <div class="profile-photo-container">
+                        <div class="profile-photo-ring">
+                            <div class="profile-photo-circle">
                                 {% if user.profile.avatar %}
-                                    <img src="{{ user.profile.avatar.url }}" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover;">
+                                    <img src="{{ user.profile.avatar.url }}" alt="Avatar de {{ user.username }}" id="currentAvatarImg">
+                                {% elif user.profile.cover %}
+                                    <img src="{{ user.profile.cover.url }}" alt="Foto de {{ user.username }}" id="currentAvatarImg">
                                 {% else %}
-                                    {{ user.username|first|upper }}
+                                    <span id="avatarInitial">{{ user.username|first|upper }}</span>
                                 {% endif %}
-                            {% else %}
-                                V
-                            {% endif %}
+                            </div>
+                        </div>
+                        <!-- Botão câmera sobreposto na foto redonda -->
+                        <div class="photo-edit-badge" data-bs-toggle="modal" data-bs-target="#editProfileModal" title="Alterar foto do perfil">
+                            <i class="bi bi-camera-fill"></i>
                         </div>
                     </div>
-                </div>
-                
-                <div class="profile-info px-4 pb-4">
-                    <h2 class="mb-1 fw-bold">
-                        {% if user.is_authenticated %}
-                            {{ user.username }}
+
+                    <!-- Dados e Ações -->
+                    <div class="profile-info-col text-center text-sm-start">
+                        <div class="d-flex flex-wrap align-items-center justify-content-center justify-content-sm-start gap-3 mb-2">
+                            <h2 class="profile-username-title">{{ user.username }}</h2>
+                            <span class="profile-tag">@{{ user.username|lower }}</span>
+
+                            <div class="d-flex gap-2 ms-sm-auto mt-2 mt-sm-0">
+                                <button class="btn-profile-primary" data-bs-toggle="modal" data-bs-target="#editProfileModal">
+                                    <i class="bi bi-pencil-square"></i> Editar perfil
+                                </button>
+                                <button class="btn-profile-create" data-bs-toggle="modal" data-bs-target="#createPostModal">
+                                    <i class="bi bi-plus-lg"></i> Postar
+                                </button>
+                                <a href="{% url 'uel_inicio' %}" class="btn-profile-icon" title="Configurações">
+                                    <i class="bi bi-gear-fill"></i>
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Estatísticas: Posts, Seguidores, Seguindo -->
+                        <div class="profile-stats-row justify-content-center justify-content-sm-start">
+                            <div class="stat-badge">
+                                <strong>{{ posts.count|default:"0" }}</strong> publicações
+                            </div>
+                            <div class="stat-badge">
+                                <strong>{{ user.followers.count|default:"0" }}</strong> seguidores
+                            </div>
+                            <div class="stat-badge">
+                                <strong>{{ user.following.count|default:"0" }}</strong> seguindo
+                            </div>
+                        </div>
+
+                        <!-- Bio e Localização -->
+                        {% if user.profile.bio %}
+                            <p class="profile-bio-text">{{ user.profile.bio|linebreaksbr }}</p>
                         {% else %}
-                            Visitante
+                            <p class="profile-bio-text text-muted fst-italic">Nenhuma biografia adicionada ainda. Clique em "Editar perfil" para adicionar.</p>
                         {% endif %}
-                    </h2>
-                    <p class="text-white-50 mb-4">@{% if user.is_authenticated %}{{ user.username|lower }}{% else %}visitante{% endif %} • Membro desde 2024</p>
-                    
-                    <div class="d-flex justify-content-center gap-3 mb-4">
-                        {% if user.is_authenticated %}
-                        <button class="btn btn-outline-light rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#editProfileModal">
-                            <i class="bi bi-pencil me-2"></i>Editar Perfil
-                        </button>
-                        {% endif %}
-                        <!-- A tag href abaixo referencia uma url mencionada no base.html para configs -->
-                        <a href="{% url 'uel_inicio' %}" class="btn btn-dark rounded-pill px-3" title="Configurações">
-                            <i class="bi bi-gear"></i>
-                        </a>
-                    </div>
-                    
-                    <div class="row justify-content-center mt-4">
-                        <div class="col-4 col-md-3">
-                            <div class="stat-box">
-                                <div class="stat-number">{{ user.posts.count|default:"0" }}</div>
-                                <div class="stat-label">Posts</div>
-                            </div>
-                        </div>
-                        <div class="col-4 col-md-3">
-                            <div class="stat-box">
-                                <div class="stat-number">{{ user.followers.count|default:"0" }}</div>
-                                <div class="stat-label">Seguidores</div>
-                            </div>
-                        </div>
-                        <div class="col-4 col-md-3">
-                            <div class="stat-box">
-                                <div class="stat-number">{{ user.following.count|default:"0" }}</div>
-                                <div class="stat-label">Seguindo</div>
-                            </div>
+
+                        <div class="profile-meta-tags justify-content-center justify-content-sm-start">
+                            {% if user.profile.location %}
+                                <span><i class="bi bi-geo-alt me-1 text-danger"></i>{{ user.profile.location }}</span>
+                            {% endif %}
+                            {% if user.profile.website %}
+                                <span><i class="bi bi-link-45deg me-1 text-info"></i><a href="{{ user.profile.website }}" target="_blank" rel="noopener">{{ user.profile.website }}</a></span>
+                            {% endif %}
+                            <span><i class="bi bi-calendar3 me-1 text-warning"></i>Entrou em {{ user.date_joined|date:"M Y" }}</span>
                         </div>
                     </div>
+
                 </div>
             </div>
 
-            <!-- Navegação do Perfil -->
-            <ul class="nav nav-pills nav-pills-custom justify-content-center mb-4" id="profile-tabs" role="tablist">
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link active" id="posts-tab" data-bs-toggle="pill" data-bs-target="#posts" type="button" role="tab">Postagens</button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="about-tab" data-bs-toggle="pill" data-bs-target="#about" type="button" role="tab">Sobre</button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="media-tab" data-bs-toggle="pill" data-bs-target="#media" type="button" role="tab">Mídia</button>
-                </li>
-            </ul>
+            <!-- ── CAIXA DE CRIAÇÃO RÁPIDA DE POSTAGEM FUNCIONAL ── -->
+            <div class="quick-create-card">
+                <form action="{% url 'criar_post' %}" method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="d-flex align-items-start gap-3">
+                        <div class="rounded-circle overflow-hidden flex-shrink-0" style="width: 42px; height: 42px; border: 2px solid #6366f1;">
+                            {% if user.profile.avatar %}
+                                <img src="{{ user.profile.avatar.url }}" style="width:100%;height:100%;object-fit:cover;">
+                            {% elif user.profile.cover %}
+                                <img src="{{ user.profile.cover.url }}" style="width:100%;height:100%;object-fit:cover;">
+                            {% else %}
+                                <div class="w-100 h-100 d-flex align-items-center justify-content-center bg-primary text-white fw-bold">
+                                    {{ user.username|first|upper }}
+                                </div>
+                            {% endif %}
+                        </div>
 
-            <!-- Conteúdo das Abas -->
-            <div class="tab-content" id="profile-tabs-content">
-                
-                <!-- Aba Postagens -->
-                <div class="tab-pane fade show active" id="posts" role="tabpanel">
-                    <!-- Criar Novo Post -->
-                    <div class="content-card mb-4 p-3 p-md-4">
-                        <div class="d-flex align-items-center gap-3">
-                            <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center flex-shrink-0 overflow-hidden" style="width: 45px; height: 45px; font-weight: bold;">
-                                {% if user.is_authenticated %}
-                                    {% if user.profile.avatar %}
-                                        <img src="{{ user.profile.avatar.url }}" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover;">
-                                    {% else %}
-                                        {{ user.username|first|upper }}
-                                    {% endif %}
-                                {% else %}
-                                    V
-                                {% endif %}
+                        <div class="flex-grow-1">
+                            <textarea name="content" class="form-control quick-create-input mb-2" rows="2" placeholder="O que você está pensando, {{ user.username }}?" required></textarea>
+
+                            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 pt-1">
+                                <div class="d-flex gap-2">
+                                    <label class="btn btn-sm btn-outline-light rounded-pill px-3 py-1 d-flex align-items-center gap-1" style="font-size:0.78rem; cursor:pointer;" title="Anexar Foto">
+                                        <i class="bi bi-image text-info"></i> Foto
+                                        <input type="file" name="image" class="d-none" accept="image/*" onchange="previewQuickMedia(this, 'img')">
+                                    </label>
+                                    <label class="btn btn-sm btn-outline-light rounded-pill px-3 py-1 d-flex align-items-center gap-1" style="font-size:0.78rem; cursor:pointer;" title="Anexar Vídeo">
+                                        <i class="bi bi-camera-video text-danger"></i> Vídeo
+                                        <input type="file" name="video" class="d-none" accept="video/*" onchange="previewQuickMedia(this, 'vid')">
+                                    </label>
+                                    <label class="btn btn-sm btn-outline-light rounded-pill px-3 py-1 d-flex align-items-center gap-1" style="font-size:0.78rem; cursor:pointer;" title="Anexar Áudio">
+                                        <i class="bi bi-music-note-beamed text-warning"></i> Áudio
+                                        <input type="file" name="audio" class="d-none" accept="audio/*" onchange="previewQuickMedia(this, 'aud')">
+                                    </label>
+                                </div>
+
+                                <div class="d-flex align-items-center gap-2">
+                                    <span id="quickMediaNotice" class="badge bg-secondary d-none" style="font-size:0.72rem;">Arquivo selecionado</span>
+                                    <button type="submit" class="btn btn-save-glow btn-sm px-4">
+                                        <i class="bi bi-send-fill me-1"></i> Publicar
+                                    </button>
+                                </div>
                             </div>
-                            <input type="text" class="form-control bg-dark border-0 text-light rounded-pill px-4" placeholder="O que você está pensando?" style="height: 50px;">
                         </div>
                     </div>
+                </form>
+            </div>
 
-                    <!-- Feed de Posts -->
-                    <div class="content-card">
-                        {% if user.is_authenticated and user.posts.all %}
-                            {% for post in user.posts.all %}
-                            <div class="post-item">
-                                <div class="d-flex justify-content-between mb-3">
-                                    <div class="d-flex align-items-center gap-3">
-                                        <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center overflow-hidden" style="width: 45px; height: 45px; font-weight: bold;">
-                                            {% if user.profile.avatar %}
-                                                <img src="{{ user.profile.avatar.url }}" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover;">
-                                            {% else %}
+            <!-- ── NAVEGAÇÃO POR ABAS (POSTS, MÍDIA, SOBRE) ── -->
+            <div class="profile-tabs-nav" id="profileTabNav" role="tablist">
+                <button class="profile-tab-button active" id="tab-posts-btn" data-bs-toggle="pill" data-bs-target="#tab-posts-pane" role="tab">
+                    <i class="bi bi-grid-3x3"></i> Publicações
+                </button>
+                <button class="profile-tab-button" id="tab-media-btn" data-bs-toggle="pill" data-bs-target="#tab-media-pane" role="tab">
+                    <i class="bi bi-images"></i> Galeria de Mídia
+                </button>
+                <button class="profile-tab-button" id="tab-about-btn" data-bs-toggle="pill" data-bs-target="#tab-about-pane" role="tab">
+                    <i class="bi bi-person-lines-fill"></i> Detalhes
+                </button>
+            </div>
+
+            <!-- ── CONTEÚDO DAS ABAS ── -->
+            <div class="tab-content" id="profileTabContent">
+
+                <!-- ABA 1: PUBLICAÇÕES (FEED DO PERFIL) -->
+                <div class="tab-pane fade show active" id="tab-posts-pane" role="tabpanel">
+                    {% if posts %}
+                        {% for post in posts %}
+                        <div class="profile-post-card" id="post-{{ post.id }}">
+                            <!-- Autor do post -->
+                            <div class="d-flex align-items-center justify-content-between mb-3">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="rounded-circle overflow-hidden" style="width:40px;height:40px;border:2px solid #6366f1;">
+                                        {% if user.profile.avatar %}
+                                            <img src="{{ user.profile.avatar.url }}" style="width:100%;height:100%;object-fit:cover;">
+                                        {% elif user.profile.cover %}
+                                            <img src="{{ user.profile.cover.url }}" style="width:100%;height:100%;object-fit:cover;">
+                                        {% else %}
+                                            <div class="w-100 h-100 d-flex align-items-center justify-content-center bg-primary text-white fw-bold">
                                                 {{ user.username|first|upper }}
-                                            {% endif %}
-                                        </div>
-                                        <div>
-                                            <h6 class="mb-0 fw-bold">{{ user.username }}</h6>
-                                            <small class="text-white-50">{{ post.created_at|timesince }} atrás</small>
-                                        </div>
+                                            </div>
+                                        {% endif %}
                                     </div>
                                     <div>
-                                        <button class="btn btn-sm btn-link text-white-50"><i class="bi bi-three-dots"></i></button>
+                                        <h6 class="text-white mb-0 fw-bold">{{ user.username }}</h6>
+                                        <small class="text-white-50">{{ post.created_at|timesince }} atrás</small>
                                     </div>
                                 </div>
-                                <p class="mb-3">{{ post.content }}</p>
-                                
-                                <div class="d-flex gap-4 mt-3 pt-3 border-top border-secondary border-opacity-25">
-                                    <button class="btn btn-link text-white-50 text-decoration-none p-0 d-flex align-items-center gap-2">
-                                        <i class="bi bi-heart"></i> <span>{{ post.likes.count|default:"0" }}</span>
+                                <div class="dropdown">
+                                    <button class="btn btn-link text-white-50 p-0 text-decoration-none" data-bs-toggle="dropdown">
+                                        <i class="bi bi-three-dots fs-5"></i>
                                     </button>
-                                    <button class="btn btn-link text-white-50 text-decoration-none p-0 d-flex align-items-center gap-2">
-                                        <i class="bi bi-chat"></i> <span>{{ post.comments.count|default:"0" }}</span>
-                                    </button>
-                                    <button class="btn btn-link text-white-50 text-decoration-none p-0 d-flex align-items-center gap-2 ms-auto">
-                                        <i class="bi bi-share"></i>
-                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end">
+                                        <li>
+                                            <a class="dropdown-item" href="javascript:void(0);" onclick="navigator.clipboard.writeText(window.location.origin + '#post-{{ post.id }}'); alert('Link do post copiado!');">
+                                                <i class="bi bi-link-45deg me-2"></i>Copiar link
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <!-- Conteúdo de texto -->
+                            {% if post.content %}
+                                <p class="text-white mb-3" style="font-size:0.95rem; line-height:1.5;">{{ post.content }}</p>
+                            {% endif %}
+
+                            <!-- Mídia da postagem -->
+                            {% if post.image %}
+                                <div class="rounded-3 overflow-hidden mb-3 border border-secondary" style="max-height: 480px; background: #000;">
+                                    <img src="{{ post.image.url }}" class="w-100" style="max-height: 480px; object-fit: contain;">
+                                </div>
+                            {% endif %}
+
+                            {% if post.video %}
+                                <div class="rounded-3 overflow-hidden mb-3 border border-secondary" style="background: #000;">
+                                    <video src="{{ post.video.url }}" controls class="w-100" style="max-height: 480px;"></video>
+                                </div>
+                            {% endif %}
+
+                            {% if post.audio %}
+                                <div class="p-3 rounded-3 mb-3 border border-secondary" style="background: rgba(99,102,241,0.08);">
+                                    <div class="d-flex align-items-center gap-2 mb-2 text-info">
+                                        <i class="bi bi-music-note-beamed fs-4"></i>
+                                        <span class="small fw-bold">Faixa de áudio</span>
+                                    </div>
+                                    <audio src="{{ post.audio.url }}" controls class="w-100"></audio>
+                                </div>
+                            {% endif %}
+
+                            <!-- Ações: Curtir, Comentar, Compartilhar -->
+                            <div class="d-flex align-items-center gap-4 pt-2 border-top" style="border-color: rgba(255,255,255,0.08) !important;">
+                                <a href="{% url 'like_post' post.id %}" class="btn btn-link text-decoration-none p-0 d-flex align-items-center gap-2" style="font-size:0.9rem;">
+                                    {% if user in post.likes.all %}
+                                        <i class="bi bi-heart-fill text-danger fs-5"></i>
+                                        <span class="text-danger fw-bold">{{ post.likes.count }}</span>
+                                    {% else %}
+                                        <i class="bi bi-heart text-white-50 fs-5"></i>
+                                        <span class="text-white-50">{{ post.likes.count }}</span>
+                                    {% endif %}
+                                </a>
+
+                                <button class="btn btn-link text-white-50 text-decoration-none p-0 d-flex align-items-center gap-2" data-bs-toggle="collapse" data-bs-target="#comments-post-{{ post.id }}" style="font-size:0.9rem;">
+                                    <i class="bi bi-chat fs-5"></i>
+                                    <span>{{ post.comments.count }} comentário{% if post.comments.count != 1 %}s{% endif %}</span>
+                                </button>
+
+                                <button class="btn btn-link text-white-50 text-decoration-none p-0 ms-auto" onclick="navigator.clipboard.writeText(window.location.origin + '#post-{{ post.id }}'); this.innerHTML='<i class=\'bi bi-check2 text-success fs-5\'></i>'; setTimeout(() => this.innerHTML='<i class=\'bi bi-share fs-5\'></i>', 1800);" title="Compartilhar">
+                                    <i class="bi bi-share fs-5"></i>
+                                </button>
+                            </div>
+
+                            <!-- Área de Comentários Collapse -->
+                            <div class="collapse mt-3 pt-3 border-top" id="comments-post-{{ post.id }}" style="border-color: rgba(255,255,255,0.06) !important;">
+                                <div class="mb-3">
+                                    {% for comment in post.comments.all %}
+                                        <div class="d-flex gap-2 mb-2">
+                                            <span class="text-white fw-bold small">@{{ comment.user.username }}:</span>
+                                            <span class="text-white-50 small">{{ comment.content }}</span>
+                                        </div>
+                                    {% empty %}
+                                        <p class="text-muted small mb-0">Nenhum comentário ainda. Seja o primeiro a comentar!</p>
+                                    {% endfor %}
+                                </div>
+
+                                <form action="{% url 'comment_post' post.id %}" method="post" class="d-flex gap-2">
+                                    {% csrf_token %}
+                                    <input type="text" name="content" class="form-control quick-create-input py-1 px-3" placeholder="Escreva um comentário..." required style="font-size:0.85rem;">
+                                    <button type="submit" class="btn btn-sm btn-spider rounded-pill px-3">Enviar</button>
+                                </form>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <!-- Estado Vazio de Posts -->
+                        <div class="profile-post-card text-center py-5">
+                            <div class="rounded-circle border border-2 border-secondary d-inline-flex align-items-center justify-content-center mb-3" style="width: 72px; height: 72px;">
+                                <i class="bi bi-camera fs-2 text-white-50"></i>
+                            </div>
+                            <h5 class="text-white fw-bold mb-2">Nenhuma publicação ainda</h5>
+                            <p class="text-white-50 mb-4" style="max-width: 360px; margin: 0 auto;">Compartilhe momentos, fotos, pensamentos e músicas com seus amigos!</p>
+                            <button class="btn btn-save-glow" data-bs-toggle="modal" data-bs-target="#createPostModal">
+                                <i class="bi bi-plus-lg me-1"></i> Fazer primeira publicação
+                            </button>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- ABA 2: GALERIA DE MÍDIA -->
+                <div class="tab-pane fade" id="tab-media-pane" role="tabpanel">
+                    {% if media_posts %}
+                        <div class="row g-2">
+                            {% for mp in media_posts %}
+                            <div class="col-4">
+                                <div class="media-grid-item">
+                                    {% if mp.image %}
+                                        <img src="{{ mp.image.url }}" alt="Post">
+                                    {% elif mp.video %}
+                                        <video src="{{ mp.video.url }}"></video>
+                                    {% elif mp.audio %}
+                                        <div class="w-100 h-100 d-flex flex-column align-items-center justify-content-center bg-dark text-info">
+                                            <i class="bi bi-music-note-beamed fs-1"></i>
+                                            <small class="text-white-50 mt-1">Áudio</small>
+                                        </div>
+                                    {% endif %}
+                                    <div class="media-grid-overlay">
+                                        <span><i class="bi bi-heart-fill me-1 text-danger"></i> {{ mp.likes.count }}</span>
+                                        <span><i class="bi bi-chat-fill me-1"></i> {{ mp.comments.count }}</span>
+                                    </div>
                                 </div>
                             </div>
                             {% endfor %}
-                        {% else %}
-                            <div class="text-center py-4 text-white-50">
-                                <i class="bi bi-card-text fs-1 mb-3 d-block"></i>
-                                <p>Nenhum post publicado ainda.</p>
-                            </div>
-                        {% endif %}
-                    </div>
+                        </div>
+                    {% else %}
+                        <div class="profile-post-card text-center py-5">
+                            <i class="bi bi-images text-white-50 mb-3 d-block" style="font-size: 2.8rem;"></i>
+                            <h5 class="text-white fw-bold mb-1">Nenhuma foto ou vídeo</h5>
+                            <p class="text-white-50 mb-4">Fotos e vídeos que você postar aparecerão organizados aqui.</p>
+                            <button class="btn btn-profile-primary" data-bs-toggle="modal" data-bs-target="#createPostModal">
+                                <i class="bi bi-upload me-1"></i> Enviar mídia
+                            </button>
+                        </div>
+                    {% endif %}
                 </div>
 
-                <!-- Aba Sobre -->
-                <div class="tab-pane fade" id="about" role="tabpanel">
-                    <div class="content-card">
-                        <h4 class="fw-bold mb-4">Sobre Mim</h4>
-                        <p class="text-white-50 mb-4">{% if user.is_authenticated and user.profile.bio %}{{ user.profile.bio }}{% else %}Nenhuma biografia disponível ainda.{% endif %}</p>
-                        
-                        <div class="row g-4">
-                            <div class="col-md-6">
-                                <div class="d-flex align-items-center gap-3 text-white-50">
-                                    <i class="bi bi-geo-alt fs-4 text-primary"></i>
-                                    <div>
-                                        <small class="d-block text-uppercase">Localização</small>
-                                        <span class="text-white">{% if user.profile.location %}{{ user.profile.location }}{% else %}Não informada{% endif %}</span>
-                                    </div>
-                                </div>
+                <!-- ABA 3: DETALHES / SOBRE -->
+                <div class="tab-pane fade" id="tab-about-pane" role="tabpanel">
+                    <div class="profile-post-card">
+                        <h6 class="text-white fw-bold mb-4 text-uppercase tracking-wider" style="letter-spacing:1px; font-size:0.8rem;">Informações do Perfil</h6>
+
+                        <div class="d-flex align-items-center gap-3 py-3 border-bottom" style="border-color: rgba(255,255,255,0.07) !important;">
+                            <div class="rounded-3 p-2 d-flex align-items-center justify-content-center" style="background:rgba(99,102,241,0.12); color:#818cf8; width:40px; height:40px;">
+                                <i class="bi bi-person fs-5"></i>
                             </div>
-                            <div class="col-md-6">
-                                <div class="d-flex align-items-center gap-3 text-white-50">
-                                    <i class="bi bi-link-45deg fs-4 text-primary"></i>
-                                    <div>
-                                        <small class="d-block text-uppercase">Website</small>
-                                        {% if user.profile.website %}
-                                        <a href="{{ user.profile.website }}" class="text-primary text-decoration-none" target="_blank">{{ user.profile.website }}</a>
-                                        {% else %}
-                                        <span class="text-white">Não informado</span>
-                                        {% endif %}
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="d-flex align-items-center gap-3 text-white-50">
-                                    <i class="bi bi-calendar3 fs-4 text-primary"></i>
-                                    <div>
-                                        <small class="d-block text-uppercase">Nascimento</small>
-                                        <span class="text-white">{% if user.profile.birth_date %}{{ user.profile.birth_date }}{% else %}Não informado{% endif %}</span>
-                                    </div>
-                                </div>
+                            <div>
+                                <small class="text-white-50 d-block text-uppercase" style="font-size:0.72rem;">Nome de Usuário</small>
+                                <span class="text-white fw-semibold">@{{ user.username }}</span>
                             </div>
                         </div>
-                    </div>
-                </div>
 
-                <!-- Aba Mídia -->
-                <div class="tab-pane fade" id="media" role="tabpanel">
-                    <div class="content-card">
-                        <div class="text-center py-5 text-white-50">
-                            <i class="bi bi-image fs-1 mb-3"></i>
-                            <h5>Nenhuma mídia ainda</h5>
-                            <p>Fotos e vídeos que você compartilhar aparecerão aqui.</p>
+                        <div class="d-flex align-items-center gap-3 py-3 border-bottom" style="border-color: rgba(255,255,255,0.07) !important;">
+                            <div class="rounded-3 p-2 d-flex align-items-center justify-content-center" style="background:rgba(236,72,153,0.12); color:#f472b6; width:40px; height:40px;">
+                                <i class="bi bi-card-text fs-5"></i>
+                            </div>
+                            <div>
+                                <small class="text-white-50 d-block text-uppercase" style="font-size:0.72rem;">Biografia</small>
+                                <span class="text-white">{% if user.profile.bio %}{{ user.profile.bio }}{% else %}<span class="text-white-50">Não informada</span>{% endif %}</span>
+                            </div>
+                        </div>
+
+                        <div class="d-flex align-items-center gap-3 py-3 border-bottom" style="border-color: rgba(255,255,255,0.07) !important;">
+                            <div class="rounded-3 p-2 d-flex align-items-center justify-content-center" style="background:rgba(14,165,233,0.12); color:#38bdf8; width:40px; height:40px;">
+                                <i class="bi bi-geo-alt fs-5"></i>
+                            </div>
+                            <div>
+                                <small class="text-white-50 d-block text-uppercase" style="font-size:0.72rem;">Localização</small>
+                                <span class="text-white">{% if user.profile.location %}{{ user.profile.location }}{% else %}<span class="text-white-50">Não informada</span>{% endif %}</span>
+                            </div>
+                        </div>
+
+                        <div class="d-flex align-items-center gap-3 py-3 border-bottom" style="border-color: rgba(255,255,255,0.07) !important;">
+                            <div class="rounded-3 p-2 d-flex align-items-center justify-content-center" style="background:rgba(34,197,94,0.12); color:#4ade80; width:40px; height:40px;">
+                                <i class="bi bi-link-45deg fs-5"></i>
+                            </div>
+                            <div>
+                                <small class="text-white-50 d-block text-uppercase" style="font-size:0.72rem;">Website</small>
+                                <span>
+                                    {% if user.profile.website %}
+                                        <a href="{{ user.profile.website }}" target="_blank" class="text-info text-decoration-none">{{ user.profile.website }}</a>
+                                    {% else %}
+                                        <span class="text-white-50">Não informado</span>
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="d-flex align-items-center gap-3 py-3">
+                            <div class="rounded-3 p-2 d-flex align-items-center justify-content-center" style="background:rgba(234,179,8,0.12); color:#facc15; width:40px; height:40px;">
+                                <i class="bi bi-calendar3 fs-5"></i>
+                            </div>
+                            <div>
+                                <small class="text-white-50 d-block text-uppercase" style="font-size:0.72rem;">Data de Registro</small>
+                                <span class="text-white">{{ user.date_joined|date:"d de F de Y" }}</span>
+                            </div>
                         </div>
                     </div>
                 </div>
 
             </div>
-            
+
         </div>
     </div>
 </div>
 
-<!-- Modal Editar Perfil -->
-<div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content" style="background-color: #1e1e2d; color: white;">
-      <div class="modal-header border-secondary border-opacity-25">
-        <h5 class="modal-title" id="editProfileModalLabel">Editar Perfil</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <!-- Ajuste a action deste formulário para a view que salvará os dados do perfil -->
-      <form action="{% url 'editar_perfil' %}" method="POST" enctype="multipart/form-data">
-          {% csrf_token %}
-          <div class="modal-body">
-              <div class="mb-3">
-                  <label for="avatarInput" class="form-label">Foto de Perfil</label>
-                  <input class="form-control bg-dark text-light border-secondary" type="file" id="avatarInput" name="avatar" accept="image/*">
-              </div>
-              <div class="mb-3">
-                  <label for="bioInput" class="form-label">Biografia</label>
-                  <textarea class="form-control bg-dark text-light border-secondary" id="bioInput" name="bio" rows="3">{{ user.profile.bio|default:"" }}</textarea>
-              </div>
-              <div class="mb-3">
-                  <label for="locationInput" class="form-label">Localização</label>
-                  <input type="text" class="form-control bg-dark text-light border-secondary" id="locationInput" name="location" value="{{ user.profile.location|default:"" }}">
-              </div>
-              <div class="mb-3">
-                  <label for="websiteInput" class="form-label">Website</label>
-                  <input type="url" class="form-control bg-dark text-light border-secondary" id="websiteInput" name="website" value="{{ user.profile.website|default:"" }}">
-              </div>
-              <div class="mb-3">
-                  <label for="birthDateInput" class="form-label">Data de Nascimento</label>
-                  <input type="date" class="form-control bg-dark text-light border-secondary" id="birthDateInput" name="birth_date" value="{{ user.profile.birth_date|date:'Y-m-d'|default:'' }}">
-              </div>
-          </div>
-          <div class="modal-footer border-secondary border-opacity-25">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-            <button type="submit" class="btn btn-primary">Salvar Alterações</button>
-          </div>
-      </form>
+<!-- ── MODAL: EDITAR PERFIL E FOTO ── -->
+<div class="modal fade" id="editProfileModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content modal-dark-glass">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold text-white mb-0">
+                    <i class="bi bi-person-gear me-2 text-primary"></i>Editar Perfil
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+
+            <form action="{% url 'editar_perfil' %}" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="modal-body p-4">
+
+                    <!-- Seletor de Foto de Perfil com Preview -->
+                    <div class="text-center mb-4">
+                        <div class="position-relative d-inline-block">
+                            <div class="rounded-circle overflow-hidden shadow" style="width: 104px; height: 104px; border: 3px solid #6366f1; background:#0b0b14; display:flex; align-items:center; justify-content:center;">
+                                {% if user.profile.avatar %}
+                                    <img id="avatarPreviewModal" src="{{ user.profile.avatar.url }}" style="width:100%;height:100%;object-fit:cover;">
+                                {% elif user.profile.cover %}
+                                    <img id="avatarPreviewModal" src="{{ user.profile.cover.url }}" style="width:100%;height:100%;object-fit:cover;">
+                                {% else %}
+                                    <span id="avatarPreviewModalInitial" class="fs-1 fw-bold text-white">{{ user.username|first|upper }}</span>
+                                    <img id="avatarPreviewModal" src="" style="width:100%;height:100%;object-fit:cover;display:none;">
+                                {% endif %}
+                            </div>
+
+                            <label for="modalAvatarInput" class="position-absolute bottom-0 end-0 btn btn-sm btn-primary rounded-circle p-1 d-flex align-items-center justify-content-center shadow" style="width:32px;height:32px;cursor:pointer;" title="Escolher nova foto">
+                                <i class="bi bi-camera-fill" style="font-size:0.85rem;"></i>
+                            </label>
+                            <input type="file" id="modalAvatarInput" name="avatar" class="d-none" accept="image/*" onchange="previewAvatarModal(this)">
+                        </div>
+                        <div class="mt-2">
+                            <label for="modalAvatarInput" class="text-info small fw-bold" style="cursor:pointer;">
+                                Clique para trocar a foto de perfil
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label text-white-50 small text-uppercase fw-bold">Biografia</label>
+                        <textarea name="bio" class="form-control quick-create-input" rows="3" placeholder="Conte algo sobre você...">{{ user.profile.bio|default:"" }}</textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label text-white-50 small text-uppercase fw-bold">Localização</label>
+                        <input type="text" name="location" class="form-control quick-create-input" value="{{ user.profile.location|default:'' }}" placeholder="Ex: São Paulo, Brasil">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label text-white-50 small text-uppercase fw-bold">Website</label>
+                        <input type="url" name="website" class="form-control quick-create-input" value="{{ user.profile.website|default:'' }}" placeholder="https://seusite.com">
+                    </div>
+
+                    <div class="mb-2">
+                        <label class="form-label text-white-50 small text-uppercase fw-bold">Data de nascimento</label>
+                        <input type="date" name="birth_date" class="form-control quick-create-input" value="{{ user.profile.birth_date|date:'Y-m-d'|default:'' }}">
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-save-glow">Salvar Alterações</button>
+                </div>
+            </form>
+        </div>
     </div>
-  </div>
 </div>
 
-<!-- Modal Editar Capa -->
-<div class="modal fade" id="editCoverModal" tabindex="-1" aria-labelledby="editCoverModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content" style="background-color: #1e1e2d; color: white;">
-      <div class="modal-header border-secondary border-opacity-25">
-        <h5 class="modal-title" id="editCoverModalLabel">Editar Capa</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <!-- Ajuste a action deste formulário para a view que salvará a capa do perfil -->
-      <form action="{% url 'editar_capa' %}" method="POST" enctype="multipart/form-data">
-          {% csrf_token %}
-          <div class="modal-body">
-              <div class="mb-3">
-                  <label for="coverInput" class="form-label">Nova Imagem de Capa</label>
-                  <input class="form-control bg-dark text-light border-secondary" type="file" id="coverInput" name="cover" accept="image/*">
-              </div>
-          </div>
-          <div class="modal-footer border-secondary border-opacity-25">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-            <button type="submit" class="btn btn-primary">Salvar Capa</button>
-          </div>
-      </form>
-    </div>
-  </div>
-</div>
+<script>
+    // Preview dinâmico da nova foto no modal
+    function previewAvatarModal(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = document.getElementById('avatarPreviewModal');
+                const initial = document.getElementById('avatarPreviewModalInitial');
+                if (img) {
+                    img.src = e.target.result;
+                    img.style.display = 'block';
+                }
+                if (initial) {
+                    initial.style.display = 'none';
+                }
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    // Feedback visual para mídia no quick-post
+    function previewQuickMedia(input, type) {
+        const badge = document.getElementById('quickMediaNotice');
+        if (input.files && input.files[0]) {
+            badge.classList.remove('d-none');
+            badge.textContent = 'Arquivo anexado: ' + input.files[0].name;
+            badge.className = 'badge bg-success';
+        }
+    }
+</script>
 {% endblock %}

@@ -238,20 +238,266 @@
 </div>
 
 {% else %}
-<!-- Landing page para não-autenticados -->
-<div class="d-flex flex-column justify-content-center align-items-center min-vh-100">
-    <div class="text-center p-5 glass-panel rounded-4" style="max-width: 420px; width: 90%;">
-        <h1 class="display-3 fw-bold text-white mb-2" style="font-family: cursive; letter-spacing: -2px;">spider</h1>
-        <p class="text-muted mb-4">Conecte-se com seus amigos e compartilhe momentos incríveis.</p>
-        <a href="{% url 'login' %}" class="btn btn-spider w-100 py-2 fw-bold rounded-3 mb-3 fs-6">Entrar</a>
-        <div class="d-flex align-items-center my-3">
-            <div class="flex-grow-1" style="border-top: 1px solid #363636;"></div>
-            <span class="mx-3 text-muted fw-bold" style="font-size: 0.85rem;">OU</span>
-            <div class="flex-grow-1" style="border-top: 1px solid #363636;"></div>
+<!-- ── Landing page premium ── -->
+<style>
+    .landing-wrap {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 20px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    /* Glow orbs de fundo */
+    .landing-wrap::before {
+        content: '';
+        position: fixed;
+        top: -20%;
+        left: -10%;
+        width: 600px;
+        height: 600px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(99,102,241,0.18) 0%, transparent 70%);
+        pointer-events: none;
+        animation: orbFloat 8s ease-in-out infinite;
+    }
+    .landing-wrap::after {
+        content: '';
+        position: fixed;
+        bottom: -20%;
+        right: -10%;
+        width: 500px;
+        height: 500px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(139,92,246,0.15) 0%, transparent 70%);
+        pointer-events: none;
+        animation: orbFloat 10s ease-in-out infinite reverse;
+    }
+    @keyframes orbFloat {
+        0%, 100% { transform: translate(0, 0) scale(1); }
+        50% { transform: translate(30px, -30px) scale(1.08); }
+    }
+
+    /* Card central */
+    .landing-card {
+        width: 100%;
+        max-width: 400px;
+        background: rgba(12, 12, 20, 0.80);
+        backdrop-filter: blur(28px);
+        -webkit-backdrop-filter: blur(28px);
+        border: 1px solid rgba(255,255,255,0.09);
+        border-radius: 28px;
+        padding: 44px 36px 36px;
+        box-shadow: 0 32px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(99,102,241,0.08);
+        position: relative;
+        z-index: 1;
+        animation: cardIn 0.6s cubic-bezier(0.16,1,0.3,1) forwards;
+    }
+    @keyframes cardIn {
+        from { opacity: 0; transform: translateY(24px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Logo */
+    .landing-logo {
+        font-family: cursive;
+        font-size: 3rem;
+        font-weight: 900;
+        letter-spacing: -3px;
+        background: linear-gradient(135deg, #fff 30%, rgba(99,102,241,0.9) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        line-height: 1;
+        margin-bottom: 6px;
+    }
+    .landing-tagline {
+        font-size: 0.92rem;
+        color: rgba(255,255,255,0.45);
+        margin-bottom: 32px;
+        line-height: 1.5;
+    }
+
+    /* Features mini */
+    .landing-features {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 28px;
+    }
+    .landing-feat {
+        flex: 1;
+        background: rgba(99,102,241,0.08);
+        border: 1px solid rgba(99,102,241,0.18);
+        border-radius: 14px;
+        padding: 12px 8px;
+        text-align: center;
+    }
+    .landing-feat i {
+        font-size: 1.2rem;
+        color: #818cf8;
+        display: block;
+        margin-bottom: 4px;
+    }
+    .landing-feat span {
+        font-size: 0.68rem;
+        color: rgba(255,255,255,0.45);
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+    }
+
+    /* Botões */
+    .btn-landing-primary {
+        display: block;
+        width: 100%;
+        padding: 13px;
+        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+        border: none;
+        border-radius: 16px;
+        color: #fff;
+        font-weight: 700;
+        font-size: 0.95rem;
+        text-decoration: none;
+        text-align: center;
+        transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+        box-shadow: 0 6px 24px rgba(99,102,241,0.35);
+        margin-bottom: 12px;
+    }
+    .btn-landing-primary:hover {
+        opacity: 0.92;
+        transform: translateY(-1px);
+        box-shadow: 0 10px 32px rgba(99,102,241,0.5);
+        color: #fff;
+    }
+    .btn-landing-secondary {
+        display: block;
+        width: 100%;
+        padding: 12px;
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.12);
+        border-radius: 16px;
+        color: rgba(255,255,255,0.8);
+        font-weight: 600;
+        font-size: 0.92rem;
+        text-decoration: none;
+        text-align: center;
+        transition: background 0.2s, border-color 0.2s;
+    }
+    .btn-landing-secondary:hover {
+        background: rgba(255,255,255,0.09);
+        border-color: rgba(255,255,255,0.25);
+        color: #fff;
+    }
+
+    /* Divider */
+    .landing-divider {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin: 18px 0;
+    }
+    .landing-divider::before,
+    .landing-divider::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: rgba(255,255,255,0.08);
+    }
+    .landing-divider span {
+        font-size: 0.78rem;
+        color: rgba(255,255,255,0.3);
+        font-weight: 600;
+        letter-spacing: 1px;
+    }
+
+    /* Rodapé da card */
+    .landing-footer-text {
+        text-align: center;
+        margin-top: 22px;
+        font-size: 0.82rem;
+        color: rgba(255,255,255,0.35);
+    }
+    .landing-footer-text a {
+        color: #818cf8;
+        text-decoration: none;
+        font-weight: 600;
+    }
+    .landing-footer-text a:hover { text-decoration: underline; }
+
+    /* Pulse nos avatares decorativos */
+    .landing-avatars {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 22px;
+        gap: -8px;
+    }
+    .lav {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        border: 2px solid #0b0b12;
+        margin-left: -8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: #fff;
+    }
+    .lav-count {
+        background: rgba(99,102,241,0.25);
+        border-color: rgba(99,102,241,0.4);
+        font-size: 0.72rem;
+    }
+</style>
+
+<div class="landing-wrap">
+    <div class="landing-card">
+
+        <!-- Logo -->
+        <div class="landing-logo">spider</div>
+        <p class="landing-tagline">Conecte‑se, compartilhe e descubra momentos incríveis com amigos.</p>
+
+        <!-- Mini avatares decorativos -->
+        <div class="landing-avatars">
+            <div class="lav" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);">A</div>
+            <div class="lav" style="background:linear-gradient(135deg,#ec4899,#f43f5e);">B</div>
+            <div class="lav" style="background:linear-gradient(135deg,#0ea5e9,#6366f1);">C</div>
+            <div class="lav" style="background:linear-gradient(135deg,#10b981,#0ea5e9);">D</div>
+            <div class="lav lav-count">+99</div>
         </div>
-        <p class="text-white mb-0" style="font-size: 0.92rem;">
-            Não tem conta?
-            <a href="{% url 'register' %}" class="text-spider-blue text-decoration-none fw-bold">Cadastre-se</a>
+
+        <!-- Features -->
+        <div class="landing-features">
+            <div class="landing-feat">
+                <i class="bi bi-camera"></i>
+                <span>Fotos</span>
+            </div>
+            <div class="landing-feat">
+                <i class="bi bi-chat-dots"></i>
+                <span>Mensagens</span>
+            </div>
+            <div class="landing-feat">
+                <i class="bi bi-people"></i>
+                <span>Comunidade</span>
+            </div>
+        </div>
+
+        <!-- Botões -->
+        <a href="{% url 'login' %}" class="btn-landing-primary">
+            <i class="bi bi-box-arrow-in-right me-2"></i>Entrar na conta
+        </a>
+
+        <div class="landing-divider"><span>OU</span></div>
+
+        <a href="{% url 'register' %}" class="btn-landing-secondary">
+            <i class="bi bi-person-plus me-2"></i>Criar conta grátis
+        </a>
+
+        <!-- Rodapé -->
+        <p class="landing-footer-text">
+            Ao entrar, você concorda com nossos <a href="#">Termos</a> e <a href="#">Privacidade</a>.
         </p>
     </div>
 </div>

@@ -1,1 +1,91 @@
 {% extends 'base.html' %}
+
+{% block title %}Configurações · spider{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-8 col-lg-6">
+
+            <div class="d-flex align-items-center gap-3 mb-4">
+                <a href="{% url 'url_profile' %}" class="btn btn-outline-light btn-sm rounded-circle d-flex align-items-center justify-content-center" style="width:36px;height:36px;">
+                    <i class="bi bi-arrow-left"></i>
+                </a>
+                <h4 class="text-white fw-bold mb-0">Configurações da Conta</h4>
+            </div>
+
+            <div class="card glass-panel rounded-4 p-4 border-0 mb-4">
+                <form action="{% url 'uel_inicio' %}" method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+
+                    <div class="text-center mb-4">
+                        <div class="position-relative d-inline-block">
+                            <div class="rounded-circle overflow-hidden d-flex align-items-center justify-content-center shadow"
+                                 style="width: 90px; height: 90px; border: 3px solid #6366f1; background: linear-gradient(135deg, #1a1a2e, #0f3460);">
+                                {% if user.profile.avatar %}
+                                    <img src="{{ user.profile.avatar.url }}" style="width:100%;height:100%;object-fit:cover;">
+                                {% else %}
+                                    <span class="fs-1 fw-bold text-white">{{ user.username|first|upper }}</span>
+                                {% endif %}
+                            </div>
+                            <label for="configAvatar" class="position-absolute bottom-0 end-0 btn btn-sm btn-primary rounded-circle p-1 d-flex align-items-center justify-content-center shadow" style="width:28px;height:28px;cursor:pointer;" title="Trocar foto">
+                                <i class="bi bi-camera-fill" style="font-size:0.75rem;"></i>
+                            </label>
+                            <input type="file" id="configAvatar" name="avatar" class="d-none" accept="image/*">
+                        </div>
+                        <h6 class="text-white mt-2 mb-0 fw-bold">@{{ user.username }}</h6>
+                        <small class="text-muted">Membro desde {{ user.date_joined|date:"M Y" }}</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label text-muted small text-uppercase fw-bold">Nome de exibição</label>
+                        <input type="text" name="first_name" class="form-control glass-panel text-white border-0 py-2 px-3 rounded-3" value="{{ user.first_name|default:'' }}" placeholder="Seu nome">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label text-muted small text-uppercase fw-bold">E-mail</label>
+                        <input type="email" name="email" class="form-control glass-panel text-white border-0 py-2 px-3 rounded-3" value="{{ user.email|default:'' }}" placeholder="seu.email@exemplo.com">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label text-muted small text-uppercase fw-bold">Biografia</label>
+                        <textarea name="bio" class="form-control glass-panel text-white border-0 py-2 px-3 rounded-3" rows="3" placeholder="Escreva um pouco sobre você...">{{ user.profile.bio|default:'' }}</textarea>
+                    </div>
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label class="form-label text-muted small text-uppercase fw-bold">Localização</label>
+                            <input type="text" name="location" class="form-control glass-panel text-white border-0 py-2 px-3 rounded-3" value="{{ user.profile.location|default:'' }}" placeholder="Cidade, País">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label text-muted small text-uppercase fw-bold">Website</label>
+                            <input type="url" name="website" class="form-control glass-panel text-white border-0 py-2 px-3 rounded-3" value="{{ user.profile.website|default:'' }}" placeholder="https://...">
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2 justify-content-end mt-4">
+                        <a href="{% url 'url_profile' %}" class="btn btn-outline-secondary rounded-pill px-4">Voltar</a>
+                        <button type="submit" class="btn btn-spider rounded-pill px-4 fw-bold">Salvar Configurações</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Zona de Ações da Conta -->
+            <div class="card glass-panel rounded-4 p-4 border-0">
+                <h6 class="text-white fw-bold mb-3">Ações da Conta</h6>
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="text-white d-block fw-semibold">Encerrar sessão</span>
+                        <small class="text-muted">Desconectar sua conta deste dispositivo</small>
+                    </div>
+                    <form action="{% url 'logout' %}" method="post" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3">Sair da conta</button>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

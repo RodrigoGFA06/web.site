@@ -1,51 +1,187 @@
 {% extends 'base.html' %}
 
+{% block title %}Postar Atividade · spider{% endblock %}
+
 {% block content %}
-<div class="container mt-4">
+<style>
+    .atv-ring {
+        padding: 2px;
+        background: linear-gradient(135deg, #405de6, #5851db, #833ab4, #c13584, #e1306c, #fd1d1d);
+        border-radius: 50%;
+        display: inline-flex;
+    }
+    .atv-ring img, .atv-ring .atv-placeholder {
+        width: 46px; height: 46px;
+        border: 2px solid #000;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+    .atv-placeholder {
+        display: flex; align-items: center; justify-content: center;
+        font-weight: 700; color: #fff;
+        background: linear-gradient(135deg, #405de6, #c13584);
+    }
+    #atvContent {
+        resize: none;
+        background: transparent !important;
+        border: none !important;
+        color: #f5f5f5 !important;
+        box-shadow: none !important;
+        font-size: 1.05rem;
+        padding: 0;
+    }
+    #atvContent::placeholder { color: #777; }
+    .atv-tool {
+        width: 40px; height: 40px;
+        display: inline-flex; align-items: center; justify-content: center;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(255,255,255,0.09);
+        color: #ccc;
+        cursor: pointer;
+        transition: background .2s, color .2s, transform .15s, border-color .2s;
+    }
+    .atv-tool:hover { background: rgba(0,149,246,0.15); color: #0095f6; border-color: rgba(0,149,246,0.5); transform: scale(1.08); }
+    .atv-tool.has-file { background: rgba(0,149,246,0.25); color: #0095f6; border-color: #0095f6; }
+    .atv-counter { font-size: .75rem; color: #666; transition: color .2s; }
+    .atv-counter.warning { color: #f0a500; }
+    .atv-counter.danger { color: #e44; }
+    .atv-preview {
+        display: none;
+        position: relative;
+        border-radius: 14px;
+        overflow: hidden;
+        background: #0a0a0a;
+        border: 1px solid rgba(255,255,255,0.08);
+    }
+    .atv-preview img, .atv-preview video { width: 100%; max-height: 320px; object-fit: cover; display: block; }
+    .atv-preview audio { width: 100%; }
+    .atv-remove {
+        position: absolute; top: 8px; right: 8px;
+        width: 28px; height: 28px;
+        border: none; border-radius: 50%;
+        background: rgba(0,0,0,0.7); color: #fff;
+        display: flex; align-items: center; justify-content: center;
+        cursor: pointer; z-index: 2;
+        transition: background .2s;
+    }
+    .atv-remove:hover { background: rgba(200,0,0,0.85); }
+    .atv-audio-box { padding: 22px 16px 16px; text-align: center; background: rgba(0,149,246,0.06); }
+    .atv-audio-box > i { font-size: 2.2rem; color: #0095f6; display: block; margin-bottom: 6px; }
+    .atv-audio-name { font-size: .8rem; color: #aaa; margin-bottom: 10px; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .btn-postar { transition: opacity .2s, transform .15s; }
+    .btn-postar:hover { opacity: .9; transform: scale(1.03); }
+</style>
+
+<div class="container py-4">
     <div class="row justify-content-center">
-        <div class="col-lg-6">
-            <h3 class="text-white mb-4">Postar uma Atividade</h3>
-            <div class="card bg-dark text-light border-secondary mb-4 shadow-sm">
-                <div class="card-body">
-                    <form action="{% url 'criar_post' %}" method="post" enctype="multipart/form-data">
-                        {% csrf_token %}
-                        <div class="d-flex mb-3">
-                            <div class="me-3">
-                                {% if user.profile.avatar %}
-                                    <img src="{{ user.profile.avatar.url }}" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;">
-                                {% else %}
-                                    <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
-                                        {{ user.username|first|upper }}
-                                    </div>
-                                {% endif %}
-                            </div>
-                            <div class="flex-grow-1">
-                                <textarea name="content" class="form-control bg-dark text-light border-secondary" rows="4" placeholder="No que você está pensando?" required style="resize: none;"></textarea>
-                            </div>
-                        </div>
-                        <div class="d-flex justify-content-between align-items-center mt-3">
-                            <div class="d-flex gap-2">
-                                <label for="imageUpload" class="btn btn-outline-secondary btn-sm rounded-circle" title="Adicionar foto">
-                                    <i class="bi bi-image"></i>
-                                </label>
-                                <input type="file" id="imageUpload" name="image" class="d-none" accept="image/*">
+        <div class="col-12 col-md-8 col-lg-6">
 
-                                <label for="videoUpload" class="btn btn-outline-secondary btn-sm rounded-circle" title="Adicionar vídeo">
-                                    <i class="bi bi-camera-video"></i>
-                                </label>
-                                <input type="file" id="videoUpload" name="video" class="d-none" accept="video/*">
-
-                                <label for="audioUpload" class="btn btn-outline-secondary btn-sm rounded-circle" title="Adicionar música/áudio">
-                                    <i class="bi bi-music-note-beamed"></i>
-                                </label>
-                                <input type="file" id="audioUpload" name="audio" class="d-none" accept="audio/*">
-                            </div>
-                            <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold">Postar</button>
-                        </div>
-                    </form>
-                </div>
+            <div class="d-flex align-items-center gap-3 mb-4">
+                <a href="{% url 'home' %}" class="btn btn-outline-light btn-sm rounded-circle d-flex align-items-center justify-content-center" style="width:36px;height:36px;">
+                    <i class="bi bi-arrow-left"></i>
+                </a>
+                <h4 class="text-white fw-bold mb-0">Postar uma Atividade</h4>
             </div>
+
+            <div class="card glass-panel rounded-4 border-0 p-4">
+                <form action="{% url 'criar_post' %}" method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+
+                    <div class="d-flex gap-3 mb-3">
+                        <div class="atv-ring flex-shrink-0 align-self-start">
+                            {% if user.profile.avatar %}
+                                <img src="{{ user.profile.avatar.url }}" alt="{{ user.username }}">
+                            {% else %}
+                                <div class="atv-placeholder">{{ user.username|first|upper }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="flex-grow-1">
+                            <span class="text-white fw-bold d-block" style="font-size:.95rem;">{{ user.username }}</span>
+                            <span class="text-muted d-block mb-2" style="font-size:.75rem;">Publicação pública</span>
+                            <textarea id="atvContent" name="content" class="form-control" rows="4" maxlength="2200" placeholder="No que você está pensando?" required></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Pré-visualizações -->
+                    <div class="atv-preview mb-3" id="prev-image">
+                        <button type="button" class="atv-remove" onclick="atvClear('image')"><i class="bi bi-x"></i></button>
+                        <img id="prev-image-el" src="" alt="Pré-visualização">
+                    </div>
+                    <div class="atv-preview mb-3" id="prev-video">
+                        <button type="button" class="atv-remove" onclick="atvClear('video')"><i class="bi bi-x"></i></button>
+                        <video id="prev-video-el" controls></video>
+                    </div>
+                    <div class="atv-preview mb-3" id="prev-audio">
+                        <button type="button" class="atv-remove" onclick="atvClear('audio')"><i class="bi bi-x"></i></button>
+                        <div class="atv-audio-box">
+                            <i class="bi bi-music-note-beamed"></i>
+                            <span class="atv-audio-name" id="prev-audio-name"></span>
+                            <audio id="prev-audio-el" controls></audio>
+                        </div>
+                    </div>
+
+                    <hr class="my-3" style="border-color: rgba(255,255,255,0.1);">
+
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center gap-2">
+                            <label for="atvImage" class="atv-tool mb-0" id="tool-image" title="Adicionar foto"><i class="bi bi-image"></i></label>
+                            <input type="file" id="atvImage" name="image" class="d-none" accept="image/*">
+
+                            <label for="atvVideo" class="atv-tool mb-0" id="tool-video" title="Adicionar vídeo"><i class="bi bi-camera-video"></i></label>
+                            <input type="file" id="atvVideo" name="video" class="d-none" accept="video/*">
+
+                            <label for="atvAudio" class="atv-tool mb-0" id="tool-audio" title="Adicionar música/áudio"><i class="bi bi-music-note-beamed"></i></label>
+                            <input type="file" id="atvAudio" name="audio" class="d-none" accept="audio/*">
+
+                            <span class="atv-counter ms-2" id="atvCounter">0 / 2200</span>
+                        </div>
+                        <button type="submit" class="btn btn-spider btn-postar rounded-pill px-4 fw-bold">
+                            <i class="bi bi-send-fill me-2"></i>Postar
+                        </button>
+                    </div>
+                </form>
+            </div>
+
         </div>
     </div>
 </div>
+
+<script>
+(function () {
+    var types = { image: 'atvImage', video: 'atvVideo', audio: 'atvAudio' };
+
+    // Contador de caracteres
+    var ta = document.getElementById('atvContent');
+    var counter = document.getElementById('atvCounter');
+    ta.addEventListener('input', function () {
+        var len = ta.value.length;
+        counter.textContent = len + ' / 2200';
+        counter.className = 'atv-counter ms-2' + (len > 2000 ? ' danger' : len > 1800 ? ' warning' : '');
+    });
+
+    // Pré-visualização ao escolher arquivo
+    Object.keys(types).forEach(function (type) {
+        var input = document.getElementById(types[type]);
+        input.addEventListener('change', function () {
+            var file = input.files[0];
+            if (!file) return;
+            var url = URL.createObjectURL(file);
+            document.getElementById('prev-' + type + '-el').src = url;
+            if (type === 'audio') document.getElementById('prev-audio-name').textContent = file.name;
+            document.getElementById('prev-' + type).style.display = 'block';
+            document.getElementById('tool-' + type).classList.add('has-file');
+        });
+    });
+
+    // Remover arquivo escolhido
+    window.atvClear = function (type) {
+        document.getElementById(types[type]).value = '';
+        document.getElementById('prev-' + type + '-el').src = '';
+        if (type === 'audio') document.getElementById('prev-audio-name').textContent = '';
+        document.getElementById('prev-' + type).style.display = 'none';
+        document.getElementById('tool-' + type).classList.remove('has-file');
+    };
+})();
+</script>
 {% endblock %}
