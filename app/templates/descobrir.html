@@ -43,7 +43,7 @@
                                         {% endif %}
                                     </div>
                                     <div class="d-flex flex-column overflow-hidden">
-                                        <span class="fw-bold fs-6 text-white text-truncate">@{{ u.username }}</span>
+                                        <a href="{% url 'perfil_usuario' u.username %}" class="fw-bold fs-6 text-white text-truncate text-decoration-none">@{{ u.username }}</a>
                                         <small class="text-white-50 text-truncate">{% if u.profile.bio %}{{ u.profile.bio }}{% else %}Membro do spider{% endif %}</small>
                                     </div>
                                 </div>

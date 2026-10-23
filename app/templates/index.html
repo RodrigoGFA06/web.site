@@ -104,7 +104,7 @@
                             <div class="avatar-placeholder" style="width:56px;height:56px;font-size:20px;">{{ su.username|first|upper }}</div>
                         {% endif %}
                     </div>
-                    <span>{{ su.username }}</span>
+                    <a href="{% url 'perfil_usuario' su.username %}" class="text-white text-decoration-none">{{ su.username }}</a>
                 </div>
                 {% endfor %}
             </div>
@@ -123,7 +123,7 @@
                         {% endif %}
                     </div>
                     <div class="flex-grow-1">
-                        <a href="#" class="text-white text-decoration-none fw-bold" style="font-size:0.92rem;">{{ post.user.username }}</a>
+                        <a href="{% url 'perfil_usuario' post.user.username %}" class="text-white text-decoration-none fw-bold" style="font-size:0.92rem;">{{ post.user.username }}</a>
                         <span class="text-muted d-block" style="font-size:0.77rem;">{{ post.created_at|timesince }} atrás</span>
                     </div>
                     <i class="bi bi-three-dots text-muted" style="cursor:pointer;"></i>
@@ -179,7 +179,7 @@
 
                     {% if post.content %}
                     <p class="mb-1" style="font-size:0.92rem;">
-                        <a href="#" class="text-white text-decoration-none fw-bold me-1">{{ post.user.username }}</a>
+                        <a href="{% url 'perfil_usuario' post.user.username %}" class="text-white text-decoration-none fw-bold me-1">{{ post.user.username }}</a>
                         <span>{{ post.content }}</span>
                     </p>
                     {% endif %}
@@ -195,7 +195,7 @@
                     <div class="collapse" id="comments-{{ post.id }}">
                         {% for comment in post.comments.all %}
                         <p class="mb-1" style="font-size:0.88rem;">
-                            <a href="#" class="text-white text-decoration-none fw-bold me-1">{{ comment.user.username }}</a>
+                            <a href="{% url 'perfil_usuario' comment.user.username %}" class="text-white text-decoration-none fw-bold me-1">{{ comment.user.username }}</a>
                             <span>{{ comment.content }}</span>
                         </p>
                         {% endfor %}

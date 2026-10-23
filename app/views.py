@@ -33,15 +33,21 @@ def register(request):
     return render(request, "register.html", {'form': form})
 
 @login_required
-def profile(request):
-    profile_obj, _ = Profile.objects.get_or_create(user=request.user)
-    posts = Post.objects.filter(user=request.user).order_by('-created_at').select_related('user', 'user__profile').prefetch_related('likes', 'comments')
+def profile(request, username=None):
+    profile_user = get_object_or_404(User, username=username) if username else request.user
+    profile_obj, _ = Profile.objects.get_or_create(user=profile_user)
+    posts = Post.objects.filter(user=profile_user).order_by('-created_at').select_related('user', 
+                                                                                          'user__profile').prefetch_related('likes', 'comments')
     from django.db.models import Q
     media_posts = posts.filter(Q(image__gt='') | Q(video__gt='') | Q(audio__gt=''))
     return render(request, "profile.html", {
         'posts': posts,
         'media_posts': media_posts,
         'profile': profile_obj,
+        'profile_user': profile_user,
+        'is_own_profile': profile_user == request.user,
+        'is_following': Follow.objects.filter(follower=request.user, 
+                                              followed=profile_user).exists(),
     })
 
 @login_required
