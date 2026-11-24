@@ -1,0 +1,641 @@
+
+{% extends 'base.html' %}
+{% load static %}
+
+
+{% block title %}
+Entrar — CONNECT
+{% endblock %}
+
+
+{% block extra_css %}
+
+<style>
+
+    @keyframes loginAppear {
+
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+    }
+
+
+    .login-container {
+
+        min-height: 100vh;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        padding: 40px 15px;
+
+        animation:
+            loginAppear
+            0.6s ease forwards;
+
+    }
+
+
+    .login-card {
+
+        width: 100%;
+        max-width: 950px;
+
+        overflow: hidden;
+
+        border-radius: 28px;
+
+        background:
+            rgba(18, 18, 24, 0.85);
+
+        border:
+            1px solid
+            rgba(255, 255, 255, 0.1);
+
+        backdrop-filter:
+            blur(20px);
+
+        box-shadow:
+            0 30px 80px
+            rgba(0, 0, 0, 0.4);
+
+    }
+
+
+    .login-brand {
+
+        padding: 55px;
+
+        min-height: 100%;
+
+        background:
+            linear-gradient(
+                135deg,
+                rgba(13, 110, 253, 0.3),
+                rgba(102, 16, 242, 0.3),
+                rgba(236, 72, 153, 0.15)
+            );
+
+    }
+
+
+    .login-brand h1 {
+
+        color: #ffffff;
+
+        font-size: 3rem;
+
+        font-weight: 800;
+
+    }
+
+
+    .login-brand p {
+
+        color:
+            rgba(255, 255, 255, 0.7);
+
+        font-size: 1.05rem;
+
+    }
+
+
+    .login-form {
+
+        padding: 45px;
+
+    }
+
+
+    .login-form h2 {
+
+        color: #ffffff;
+
+        font-weight: 800;
+
+    }
+
+
+    .login-form .form-control {
+
+        height: 58px;
+
+        background:
+            rgba(255, 255, 255, 0.05);
+
+        border:
+            1px solid
+            rgba(255, 255, 255, 0.12);
+
+        color: #ffffff;
+
+        border-radius: 14px;
+
+    }
+
+
+    .login-form .form-control:focus {
+
+        background:
+            rgba(255, 255, 255, 0.08);
+
+        border-color:
+            #0d6efd;
+
+        color: #ffffff;
+
+        box-shadow:
+            0 0 0 0.25rem
+            rgba(13, 110, 253, 0.15);
+
+    }
+
+
+    .login-button-submit {
+
+        width: 100%;
+
+        padding: 16px;
+
+        border: none;
+
+        border-radius: 14px;
+
+        color: #ffffff;
+
+        font-weight: 700;
+
+        background:
+            linear-gradient(
+                135deg,
+                #0d6efd,
+                #6610f2
+            );
+
+        transition:
+            0.3s ease;
+
+    }
+
+
+    .login-button-submit:hover {
+
+        transform:
+            translateY(-3px);
+
+        box-shadow:
+            0 15px 30px
+            rgba(13, 110, 253, 0.3);
+
+    }
+
+
+    .password-wrapper {
+        position: relative;
+    }
+
+
+    .password-toggle {
+
+        position: absolute;
+
+        right: 15px;
+
+        top: 50%;
+
+        transform:
+            translateY(-50%);
+
+        border: none;
+
+        background: none;
+
+        color:
+            rgba(255, 255, 255, 0.6);
+
+        z-index: 5;
+
+    }
+
+
+    @media (max-width: 991px) {
+
+        .login-brand {
+            display: none;
+        }
+
+        .login-form {
+            padding: 35px 25px;
+        }
+
+    }
+
+</style>
+
+{% endblock %}
+
+
+{% block content %}
+
+<div class="login-container">
+
+
+    <div class="login-card">
+
+
+        <div class="row g-0">
+
+
+            <!-- LADO ESQUERDO -->
+
+            <div class="col-lg-6">
+
+                <div class="login-brand">
+
+                    <div class="mb-4">
+
+                        <i
+                            class="bi bi-chat-heart-fill"
+                            style="font-size: 3rem; color: #ffffff;"
+                        ></i>
+
+                    </div>
+
+
+                    <h1>
+                        Bem-vindo de volta.
+                    </h1>
+
+
+                    <p class="mt-4">
+
+                        Entre para continuar conectado
+                        com pessoas, conversas e conteúdos
+                        que fazem parte do seu mundo.
+
+                    </p>
+
+
+                    <div
+                        class="mt-5 p-4 rounded-4"
+                        style="
+                            background: rgba(255,255,255,0.08);
+                            border: 1px solid rgba(255,255,255,0.1);
+                        "
+                    >
+
+                        <div class="d-flex gap-3">
+
+                            <i
+                                class="bi bi-lightning-charge-fill"
+                                style="font-size: 1.5rem; color: #ffffff;"
+                            ></i>
+
+
+                            <div>
+
+                                <strong
+                                    class="text-white"
+                                >
+                                    Conecte-se instantaneamente
+                                </strong>
+
+
+                                <p
+                                    class="mb-0 mt-1"
+                                    style="font-size: 0.9rem;"
+                                >
+                                    Tudo o que importa em um só lugar.
+                                </p>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                </div>
+
+            </div>
+
+
+            <!-- FORMULÁRIO -->
+
+            <div class="col-lg-6">
+
+
+                <div class="login-form">
+
+
+                    <div class="mb-4">
+
+                        <h2>
+                            Entrar
+                        </h2>
+
+
+                        <p class="text-white-50">
+
+                            Acesse sua conta para continuar.
+
+                        </p>
+
+                    </div>
+
+
+                    <!-- MENSAGENS DJANGO -->
+
+                    {% if messages %}
+
+                        {% for message in messages %}
+
+                            <div
+                                class="alert alert-{{ message.tags }} alert-dismissible fade show"
+                                role="alert"
+                            >
+
+                                {{ message }}
+
+                                <button
+                                    type="button"
+                                    class="btn-close"
+                                    data-bs-dismiss="alert"
+                                    aria-label="Fechar"
+                                ></button>
+
+                            </div>
+
+                        {% endfor %}
+
+                    {% endif %}
+
+
+                    <!-- FORM -->
+
+                    <form
+                        method="post"
+                        action="{% url 'login' %}"
+                    >
+
+                        {% csrf_token %}
+
+
+                        <!-- USUÁRIO -->
+
+                        <div class="mb-3">
+
+                            <label
+                                for="username"
+                                class="form-label text-white"
+                            >
+                                Usuário ou e-mail
+                            </label>
+
+
+                            <input
+                                type="text"
+                                id="username"
+                                name="username"
+                                class="form-control"
+                                placeholder="Digite seu usuário"
+                                autocomplete="username"
+                                required
+                                autofocus
+                            >
+
+                        </div>
+
+
+                        <!-- SENHA -->
+
+                        <div class="mb-4">
+
+                            <label
+                                for="password"
+                                class="form-label text-white"
+                            >
+                                Senha
+                            </label>
+
+
+                            <div class="password-wrapper">
+
+
+                                <input
+                                    type="password"
+                                    id="password"
+                                    name="password"
+                                    class="form-control"
+                                    placeholder="Digite sua senha"
+                                    autocomplete="current-password"
+                                    required
+                                >
+
+
+                                <button
+                                    type="button"
+                                    class="password-toggle"
+                                    id="toggle-password"
+                                    aria-label="Mostrar senha"
+                                >
+
+                                    <i
+                                        class="bi bi-eye"
+                                        id="password-icon"
+                                    ></i>
+
+                                </button>
+
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- LEMBRAR -->
+
+                        <div
+                            class="d-flex justify-content-between align-items-center mb-4"
+                        >
+
+
+                            <div class="form-check">
+
+                                <input
+                                    type="checkbox"
+                                    class="form-check-input"
+                                    id="remember"
+                                    name="remember_me"
+                                >
+
+
+                                <label
+                                    class="form-check-label text-white-50"
+                                    for="remember"
+                                >
+                                    Lembrar de mim
+                                </label>
+
+                            </div>
+
+
+                            <a
+                                href="#"
+                                class="text-decoration-none"
+                            >
+                                Esqueceu a senha?
+                            </a>
+
+
+                        </div>
+
+
+                        <!-- ENTRAR -->
+
+                        <button
+                            type="submit"
+                            class="login-button-submit"
+                        >
+
+                            Entrar agora
+
+                            <i
+                                class="bi bi-arrow-right ms-2"
+                            ></i>
+
+                        </button>
+
+
+                    </form>
+
+
+                    <!-- CADASTRO -->
+
+                    <div
+                        class="text-center mt-4 text-white-50"
+                    >
+
+                        Ainda não tem uma conta?
+
+
+                        <a
+                            href="#"
+                            class="text-decoration-none fw-bold ms-1"
+                        >
+                            Criar conta
+                        </a>
+
+
+                    </div>
+
+
+                </div>
+
+
+            </div>
+
+
+        </div>
+
+
+    </div>
+
+
+</div>
+
+{% endblock %}
+
+
+{% block extra_js %}
+
+<script>
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        function () {
+
+
+            const password =
+                document.getElementById(
+                    "password"
+                );
+
+
+            const toggle =
+                document.getElementById(
+                    "toggle-password"
+                );
+
+
+            const icon =
+                document.getElementById(
+                    "password-icon"
+                );
+
+
+            if (
+                password &&
+                toggle &&
+                icon
+            ) {
+
+
+                toggle.addEventListener(
+                    "click",
+                    function () {
+
+
+                        const hidden =
+                            password.type ===
+                            "password";
+
+
+                        password.type =
+                            hidden
+                                ? "text"
+                                : "password";
+
+
+                        icon.classList.toggle(
+                            "bi-eye",
+                            !hidden
+                        );
+
+
+                        icon.classList.toggle(
+                            "bi-eye-slash",
+                            hidden
+                        );
+
+
+                        toggle.setAttribute(
+                            "aria-label",
+                            hidden
+                                ? "Ocultar senha"
+                                : "Mostrar senha"
+                        );
+
+
+                    }
+                );
+
+
+            }
+
+
+        }
+    );
+
+</script>
+
+{% endblock %}
+

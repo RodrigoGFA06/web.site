@@ -1,0 +1,737 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}spider{% endblock %}</title>
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    
+    <style>
+        body {
+            background: #000;
+            color: #f5f5f5;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Canvas de partículas fixo atrás de tudo */
+        #particle-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* Todo o conteúdo deve ficar acima do canvas */
+        .sidebar, .main-content {
+            position: relative;
+            z-index: 1;
+        }
+        /* Garantir que o modal Bootstrap fique sempre acima de tudo */
+        .modal { z-index: 1055 !important; }
+        .modal-backdrop { z-index: 1050 !important; }
+
+        /* Glassmorphism panel for cards and sidebars */
+        .glass-panel {
+            background: rgba(10, 10, 10, 0.65) !important;
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border: 1px solid rgba(255, 255, 255, 0.09) !important;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.6);
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: 250px;
+            padding: 20px 12px;
+            display: flex;
+            flex-direction: column;
+            z-index: 1000;
+        }
+        .sidebar-logo {
+            font-family: cursive; /* simple fallback for a styled logo */
+            font-size: 1.5rem;
+            font-weight: bold;
+            padding: 10px 12px;
+            margin-bottom: 20px;
+            color: #fff;
+            text-decoration: none;
+        }
+        .sidebar-logo:hover {
+            color: #fff;
+        }
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            margin-bottom: 5px;
+            border-radius: 8px;
+            color: #f5f5f5;
+            text-decoration: none;
+            font-size: 1.1rem;
+            transition: background 0.2s;
+        }
+        .nav-item:hover {
+            background-color: #1a1a1a;
+            color: #fff;
+        }
+        .nav-item i {
+            font-size: 1.5rem;
+            margin-right: 15px;
+        }
+        .nav-item.active {
+            font-weight: bold;
+        }
+        .nav-item.active i {
+            /* If we had filled icons, we'd swap them here */
+            text-shadow: 0 0 1px #fff;
+        }
+
+        /* Main Content Area */
+        .main-content {
+            margin-left: 250px;
+            min-height: 100vh;
+        }
+
+        /* Mobile Adjustments */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 70px;
+                padding: 20px 5px;
+            }
+            .sidebar .nav-label {
+                display: none;
+            }
+            .sidebar-logo {
+                font-size: 0;
+            }
+            .sidebar-logo i {
+                font-size: 1.5rem;
+            }
+            .main-content {
+                margin-left: 70px;
+            }
+        }
+        @media (max-width: 576px) {
+            .sidebar {
+                bottom: 0;
+                top: auto;
+                left: 0;
+                height: 60px;
+                width: 100%;
+                flex-direction: row;
+                justify-content: space-around;
+                border-right: none;
+                border-top: 1px solid #262626;
+                padding: 0;
+            }
+            .sidebar-logo {
+                display: none;
+            }
+            .nav-item {
+                margin: 0;
+                padding: 10px;
+            }
+            .nav-item i {
+                margin-right: 0;
+            }
+            .main-content {
+                margin-left: 0;
+                margin-bottom: 60px;
+            }
+        }
+
+        /* Common utilities */
+        .btn-spider {
+            background-color: #0095f6;
+            color: white;
+            font-weight: 600;
+        }
+        .btn-spider:hover {
+            background-color: #1877f2;
+            color: white;
+        }
+        .text-spider-blue {
+            color: #0095f6;
+        }
+        
+        /* Modal dark theme override */
+        .modal-content {
+            background-color: #262626;
+            color: #f5f5f5;
+            border: 1px solid #363636;
+        }
+        .modal-header, .modal-footer {
+            border-color: #363636;
+        }
+        .form-control, .form-control:focus {
+            background-color: #000;
+            color: #fff;
+            border-color: #363636;
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+    {% if user.is_authenticated %}
+    <nav class="sidebar glass-panel" style="border-left: none !important; border-top: none !important; border-bottom: none !important; border-right: 1px solid rgba(255,255,255,0.08) !important;">
+        <a href="{% url 'home' %}" class="sidebar-logo">
+            <i class="bi bi-spider-web d-inline-block d-md-none"></i>
+            <span class="nav-label">spider</span>
+        </a>
+
+        <a href="{% url 'home' %}" class="nav-item">
+            <i class="bi bi-house-door"></i>
+            <span class="nav-label">Página Inicial</span>
+        </a>
+        <a href="{% url 'descobrir' %}" class="nav-item">
+            <i class="bi bi-search"></i>
+            <span class="nav-label">Pesquisa</span>
+        </a>
+        <a href="{% url 'mensagens' %}" class="nav-item">
+            <i class="bi bi-chat-dots"></i>
+            <span class="nav-label">Mensagens</span>
+        </a>
+        <!-- Postar via Modal -->
+        <a href="#" class="nav-item" data-bs-toggle="modal" data-bs-target="#createPostModal">
+            <i class="bi bi-plus-square"></i>
+            <span class="nav-label">Criar</span>
+        </a>
+        <a href="{% url 'url_profile' %}" class="nav-item">
+            <i class="bi bi-person-circle"></i>
+            <span class="nav-label">Perfil</span>
+        </a>
+        
+        <div class="mt-auto">
+            <form action="{% url 'logout' %}" method="post" class="d-inline">
+                {% csrf_token %}
+                <button type="submit" class="nav-item border-0 w-100 text-start text-danger bg-transparent">
+                    <i class="bi bi-box-arrow-right"></i>
+                    <span class="nav-label">Sair</span>
+                </button>
+            </form>
+        </div>
+    </nav>
+    {% endif %}
+
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Modal para Criar Postagem -->
+    {% if user.is_authenticated %}
+    <style>
+        #createPostModal .modal-content {
+            background: #1a1a1a;
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+        #createPostModal .modal-dialog {
+            max-width: 560px;
+        }
+        .post-media-drop {
+            border: 2px dashed rgba(255,255,255,0.18);
+            border-radius: 12px;
+            min-height: 160px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: border-color 0.25s, background 0.25s;
+            background: rgba(255,255,255,0.03);
+            position: relative;
+        }
+        .post-media-drop:hover, .post-media-drop.drag-over {
+            border-color: #0095f6;
+            background: rgba(0, 149, 246, 0.07);
+        }
+        .post-media-drop {
+            /* pointer-events only on the div itself, not children */
+        }
+        .hidden-file-input {
+            display: none;
+        }
+        .media-tabs .nav-link {
+            color: #aaa;
+            border: none;
+            border-bottom: 2px solid transparent;
+            background: none;
+            padding: 8px 18px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            border-radius: 0;
+            transition: color 0.2s, border-color 0.2s;
+        }
+        .media-tabs .nav-link.active {
+            color: #fff;
+            border-bottom-color: #0095f6;
+            background: none;
+        }
+        .media-tabs .nav-link i {
+            font-size: 1rem;
+        }
+        .char-counter {
+            font-size: 0.75rem;
+            color: #666;
+            text-align: right;
+            margin-top: 4px;
+            transition: color 0.2s;
+        }
+        .char-counter.warning { color: #f0a500; }
+        .char-counter.danger  { color: #e44; }
+        #post-caption {
+            resize: none;
+            background: transparent !important;
+            border: none !important;
+            color: #f5f5f5 !important;
+            font-size: 0.97rem;
+            box-shadow: none !important;
+            min-height: 80px;
+        }
+        #post-caption:focus { outline: none; }
+        .media-preview-wrap {
+            position: relative;
+            border-radius: 10px;
+            overflow: hidden;
+            background: #111;
+            margin-top: 10px;
+            display: none;
+        }
+        .media-preview-wrap img,
+        .media-preview-wrap video {
+            width: 100%;
+            max-height: 280px;
+            object-fit: cover;
+            display: block;
+        }
+        .media-preview-wrap audio {
+            width: 100%;
+        }
+        .media-preview-wrap .remove-media-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(0,0,0,0.7);
+            border: none;
+            color: #fff;
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .media-preview-wrap .remove-media-btn:hover { background: rgba(200,0,0,0.85); }
+        .audio-preview-inner {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 24px 16px 16px;
+        }
+        .audio-preview-inner i {
+            font-size: 2.5rem;
+            color: #0095f6;
+            margin-bottom: 10px;
+        }
+        .audio-preview-inner .audio-filename {
+            font-size: 0.8rem;
+            color: #aaa;
+            margin-bottom: 10px;
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .btn-share-post {
+            background: linear-gradient(135deg, #0095f6, #1877f2);
+            color: #fff;
+            font-weight: 700;
+            border: none;
+            padding: 12px;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: opacity 0.2s, transform 0.15s;
+        }
+        .btn-share-post:hover:not(:disabled) { opacity: 0.88; transform: scale(1.01); }
+        .btn-share-post:disabled { opacity: 0.45; cursor: not-allowed; }
+        .post-divider {
+            border-color: rgba(255,255,255,0.1) !important;
+        }
+    </style>
+
+    <div class="modal fade" id="createPostModal" tabindex="-1" aria-labelledby="createPostModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+
+                <!-- Header -->
+                <div class="modal-header border-bottom post-divider px-4 py-3">
+                    <div class="w-100 text-center position-relative">
+                        <h5 class="modal-title fw-bold mb-0" id="createPostModalLabel" style="font-size:1rem; letter-spacing:0.3px;">
+                            Criar nova publicação
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white position-absolute top-50 end-0 translate-middle-y" data-bs-dismiss="modal" aria-label="Close" style="font-size:0.75rem;"></button>
+                    </div>
+                </div>
+
+                <form action="{% url 'criar_post' %}" method="post" enctype="multipart/form-data" id="createPostForm">
+                    {% csrf_token %}
+                    <div class="modal-body p-0">
+
+                        <!-- Author row -->
+                        <div class="d-flex align-items-center px-4 pt-4 pb-2 gap-3">
+                            {% if user.profile.avatar %}
+                                <img src="{{ user.profile.avatar.url }}" class="rounded-circle flex-shrink-0" style="width:38px;height:38px;object-fit:cover;border:2px solid #0095f6;">
+                            {% else %}
+                                <div class="rounded-circle bg-gradient flex-shrink-0 d-flex align-items-center justify-content-center fw-bold" style="width:38px;height:38px;background:linear-gradient(135deg,#405de6,#5851db,#833ab4,#c13584,#e1306c,#fd1d1d);font-size:1rem;color:#fff;">
+                                    {{ user.username|first|upper }}
+                                </div>
+                            {% endif %}
+                            <div>
+                                <span class="fw-bold d-block" style="font-size:0.95rem;">{{ user.username }}</span>
+                                <span class="text-muted" style="font-size:0.75rem;">Publicação pública</span>
+                            </div>
+                        </div>
+
+                        <!-- Caption -->
+                        <div class="px-4 pb-2">
+                            <textarea
+                                id="post-caption"
+                                name="content"
+                                class="form-control"
+                                maxlength="2200"
+                                placeholder="Escreva uma legenda, use # hashtags..."
+                            ></textarea>
+                            <div class="char-counter" id="caption-counter">0 / 2200</div>
+                        </div>
+
+                        <hr class="post-divider mx-4 my-0">
+
+                        <!-- Media type tabs -->
+                        <div class="px-4 pt-3 pb-1">
+                            <p class="text-muted mb-2" style="font-size:0.78rem;text-transform:uppercase;letter-spacing:1px;font-weight:600;">Adicionar mídia</p>
+                            <ul class="nav media-tabs border-bottom post-divider mb-3" id="mediaTypeTabs">
+                                <li class="nav-item">
+                                    <button class="nav-link active" data-media-type="image" type="button">
+                                        <i class="bi bi-image me-1"></i> Foto
+                                    </button>
+                                </li>
+                                <li class="nav-item">
+                                    <button class="nav-link" data-media-type="video" type="button">
+                                        <i class="bi bi-camera-video me-1"></i> Vídeo
+                                    </button>
+                                </li>
+                                <li class="nav-item">
+                                    <button class="nav-link" data-media-type="audio" type="button">
+                                        <i class="bi bi-music-note-beamed me-1"></i> Áudio
+                                    </button>
+                                </li>
+                            </ul>
+
+                            <!-- Inputs de arquivo ocultos (fora da drop zone para não bloquear eventos) -->
+                            <input type="file" name="image" id="input-image" accept="image/*" class="hidden-file-input">
+                            <input type="file" name="video" id="input-video" accept="video/*" class="hidden-file-input">
+                            <input type="file" name="audio" id="input-audio" accept="audio/*" class="hidden-file-input">
+
+                            <!-- Drop zones (only one shown at a time) -->
+                            <!-- Image -->
+                            <div class="media-tab-panel" id="panel-image">
+                                <div class="post-media-drop" id="drop-image">
+                                    <i class="bi bi-cloud-arrow-up fs-1 text-muted mb-2"></i>
+                                    <p class="text-muted mb-0" style="font-size:0.88rem;">Arraste uma foto ou <span class="text-spider-blue fw-bold" style="cursor:pointer;">clique para selecionar</span></p>
+                                    <p class="text-muted mb-0" style="font-size:0.75rem;">JPG, PNG, GIF, WEBP</p>
+                                </div>
+                                <div class="media-preview-wrap" id="preview-image">
+                                    <button type="button" class="remove-media-btn" onclick="clearMedia('image')"><i class="bi bi-x"></i></button>
+                                    <img id="preview-image-el" src="" alt="Preview">
+                                </div>
+                            </div>
+
+                            <!-- Video -->
+                            <div class="media-tab-panel d-none" id="panel-video">
+                                <div class="post-media-drop" id="drop-video">
+                                    <i class="bi bi-film fs-1 text-muted mb-2"></i>
+                                    <p class="text-muted mb-0" style="font-size:0.88rem;">Arraste um vídeo ou <span class="text-spider-blue fw-bold" style="cursor:pointer;">clique para selecionar</span></p>
+                                    <p class="text-muted mb-0" style="font-size:0.75rem;">MP4, MOV, AVI, WEBM</p>
+                                </div>
+                                <div class="media-preview-wrap" id="preview-video">
+                                    <button type="button" class="remove-media-btn" onclick="clearMedia('video')"><i class="bi bi-x"></i></button>
+                                    <video id="preview-video-el" controls></video>
+                                </div>
+                            </div>
+
+                            <!-- Audio -->
+                            <div class="media-tab-panel d-none" id="panel-audio">
+                                <div class="post-media-drop" id="drop-audio">
+                                    <i class="bi bi-music-note-list fs-1 text-muted mb-2"></i>
+                                    <p class="text-muted mb-0" style="font-size:0.88rem;">Arraste um áudio ou <span class="text-spider-blue fw-bold" style="cursor:pointer;">clique para selecionar</span></p>
+                                    <p class="text-muted mb-0" style="font-size:0.75rem;">MP3, WAV, OGG, M4A</p>
+                                </div>
+                                <div class="media-preview-wrap" id="preview-audio">
+                                    <button type="button" class="remove-media-btn" onclick="clearMedia('audio')"><i class="bi bi-x"></i></button>
+                                    <div class="audio-preview-inner">
+                                        <i class="bi bi-music-note-beamed"></i>
+                                        <span class="audio-filename" id="audio-filename"></span>
+                                        <audio id="preview-audio-el" controls></audio>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="px-4 pb-4 pt-3">
+                            <button type="submit" class="btn btn-share-post w-100" id="shareBtn">
+                                <i class="bi bi-send-fill me-2"></i>Compartilhar publicação
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+
+    {% endif %}
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Script do Modal de Criação de Post (roda após Bootstrap) -->
+    {% if user.is_authenticated %}
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+
+        // ── Tabs de tipo de mídia ─────────────────────────────────────────────
+        const tabBtns = document.querySelectorAll('[data-media-type]');
+        const panels  = document.querySelectorAll('.media-tab-panel');
+
+        tabBtns.forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                tabBtns.forEach(function(b) { b.classList.remove('active'); });
+                btn.classList.add('active');
+                var type = btn.dataset.mediaType;
+                panels.forEach(function(p) { p.classList.add('d-none'); });
+                document.getElementById('panel-' + type).classList.remove('d-none');
+            });
+        });
+
+        // ── Contador de caracteres ────────────────────────────────────────────
+        var caption = document.getElementById('post-caption');
+        var counter = document.getElementById('caption-counter');
+        if (caption) {
+            caption.addEventListener('input', function() {
+                var len = caption.value.length;
+                counter.textContent = len + ' / 2200';
+                counter.className = 'char-counter' + (len > 2000 ? ' danger' : len > 1800 ? ' warning' : '');
+            });
+        }
+
+        // ── Drop zones + seletor de arquivo ───────────────────────────────────
+        ['image', 'video', 'audio'].forEach(function(type) {
+            var dropEl = document.getElementById('drop-' + type);
+            var input  = document.getElementById('input-' + type);
+            if (!dropEl || !input) return;
+
+            // Clicar na zona abre o seletor de arquivo
+            dropEl.addEventListener('click', function() {
+                input.click();
+            });
+
+            // Drag & drop
+            dropEl.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                dropEl.classList.add('drag-over');
+            });
+            dropEl.addEventListener('dragleave', function(e) {
+                if (!dropEl.contains(e.relatedTarget)) {
+                    dropEl.classList.remove('drag-over');
+                }
+            });
+            dropEl.addEventListener('drop', function(e) {
+                e.preventDefault();
+                dropEl.classList.remove('drag-over');
+                var file = e.dataTransfer.files[0];
+                if (file) applyFile(type, file);
+            });
+
+            // Quando arquivo selecionado via input
+            input.addEventListener('change', function() {
+                if (input.files[0]) applyFile(type, input.files[0]);
+            });
+        });
+
+        function applyFile(type, file) {
+            var url       = URL.createObjectURL(file);
+            var dropEl    = document.getElementById('drop-' + type);
+            var previewEl = document.getElementById('preview-' + type);
+            var input     = document.getElementById('input-' + type);
+
+            if (type === 'image') {
+                document.getElementById('preview-image-el').src = url;
+            } else if (type === 'video') {
+                document.getElementById('preview-video-el').src = url;
+            } else if (type === 'audio') {
+                document.getElementById('preview-audio-el').src = url;
+                document.getElementById('audio-filename').textContent = file.name;
+            }
+            dropEl.style.display = 'none';
+            previewEl.style.display = 'block';
+
+            // Para drag & drop: atribuir arquivo ao input
+            if (input && (!input.files || !input.files.length)) {
+                try {
+                    var dt = new DataTransfer();
+                    dt.items.add(file);
+                    input.files = dt.files;
+                } catch(err) {}
+            }
+        }
+
+        window.clearMedia = function(type) {
+            var dropEl    = document.getElementById('drop-' + type);
+            var previewEl = document.getElementById('preview-' + type);
+            var input     = document.getElementById('input-' + type);
+            if (type === 'image')      { document.getElementById('preview-image-el').src = ''; }
+            else if (type === 'video') { document.getElementById('preview-video-el').src = ''; }
+            else if (type === 'audio') {
+                document.getElementById('preview-audio-el').src = '';
+                document.getElementById('audio-filename').textContent = '';
+            }
+            if (input) input.value = '';
+            dropEl.style.display = '';
+            previewEl.style.display = 'none';
+        };
+
+        // ── Reset ao fechar o modal ───────────────────────────────────────────
+        var modal = document.getElementById('createPostModal');
+        if (modal) {
+            modal.addEventListener('hidden.bs.modal', function() {
+                document.getElementById('createPostForm').reset();
+                ['image', 'video', 'audio'].forEach(function(t) { window.clearMedia(t); });
+                if (caption) {
+                    caption.value = '';
+                    counter.textContent = '0 / 2200';
+                    counter.className = 'char-counter';
+                }
+            });
+        }
+    });
+    </script>
+    {% endif %}
+
+    <!-- Partículas estrelares -->
+    <canvas id="particle-canvas"></canvas>
+    <script>
+        const canvas = document.getElementById('particle-canvas');
+        const ctx = canvas.getContext('2d');
+
+        let particles = [];
+        const PARTICLE_COUNT = 180;
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        class Particle {
+            constructor(exploding) {
+                this.reset(exploding);
+            }
+            reset(exploding) {
+                // Posição de origem aleatória ou centro de explosão
+                if (exploding) {
+                    this.x = Math.random() * canvas.width;
+                    this.y = Math.random() * canvas.height;
+                    const angle = Math.random() * Math.PI * 2;
+                    const speed = Math.random() * 2.5 + 0.5;
+                    this.vx = Math.cos(angle) * speed;
+                    this.vy = Math.sin(angle) * speed;
+                    this.life = 1.0;
+                    this.decay = Math.random() * 0.008 + 0.003;
+                    this.size = Math.random() * 2.5 + 0.5;
+                } else {
+                    this.x = Math.random() * canvas.width;
+                    this.y = Math.random() * canvas.height;
+                    const angle = Math.random() * Math.PI * 2;
+                    const speed = Math.random() * 0.6 + 0.1;
+                    this.vx = Math.cos(angle) * speed;
+                    this.vy = Math.sin(angle) * speed;
+                    this.life = Math.random() * 0.6 + 0.4;
+                    this.decay = Math.random() * 0.003 + 0.001;
+                    this.size = Math.random() * 1.8 + 0.3;
+                }
+            }
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.life -= this.decay;
+                // Desacelera gradualmente
+                this.vx *= 0.995;
+                this.vy *= 0.995;
+            }
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = Math.max(0, this.life);
+                ctx.fillStyle = '#ffffff';
+                ctx.shadowColor = '#ffffff';
+                ctx.shadowBlur = this.size * 3;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        // Inicializar partículas existentes espalhadas pela tela
+        for (let i = 0; i < PARTICLE_COUNT; i++) {
+            particles.push(new Particle(false));
+        }
+
+        // A cada intervalo, criar uma mini-explosão
+        setInterval(() => {
+            const cx = Math.random() * canvas.width;
+            const cy = Math.random() * canvas.height;
+            for (let i = 0; i < 25; i++) {
+                const p = new Particle(true);
+                p.x = cx;
+                p.y = cy;
+                particles.push(p);
+            }
+        }, 1800);
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles = particles.filter(p => p.life > 0);
+
+            // Manter contagem mínima de partículas flutuantes
+            while (particles.length < PARTICLE_COUNT) {
+                particles.push(new Particle(false));
+            }
+
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            requestAnimationFrame(animate);
+        }
+        animate();
+    </script>
+</body>
+</html>

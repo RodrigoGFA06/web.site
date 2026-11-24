@@ -1,0 +1,505 @@
+{% extends 'base.html' %}
+
+{% block title %}spider · Feed{% endblock %}
+
+{% block content %}
+{% if user.is_authenticated %}
+
+<style>
+    /* Feed animations */
+    .post-card {
+        animation: fadeInUp 0.4s ease forwards;
+        opacity: 0;
+    }
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(18px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+    .post-card:nth-child(1) { animation-delay: 0.05s; }
+    .post-card:nth-child(2) { animation-delay: 0.12s; }
+    .post-card:nth-child(3) { animation-delay: 0.19s; }
+    .post-card:nth-child(4) { animation-delay: 0.26s; }
+    .post-card:nth-child(5) { animation-delay: 0.33s; }
+
+    /* Like button pulse */
+    .like-btn { transition: transform 0.15s; }
+    .like-btn:active { transform: scale(1.35); }
+
+    /* Comment input */
+    .comment-input {
+        background: transparent !important;
+        border: none !important;
+        color: #f5f5f5 !important;
+        font-size: 0.9rem;
+        box-shadow: none !important;
+    }
+    .comment-input:focus { outline: none !important; }
+
+    /* Avatar gradient ring */
+    .avatar-ring {
+        padding: 2px;
+        background: linear-gradient(135deg, #405de6, #5851db, #833ab4, #c13584, #e1306c, #fd1d1d);
+        border-radius: 50%;
+        display: inline-flex;
+    }
+    .avatar-ring img, .avatar-ring .avatar-placeholder {
+        border: 2px solid #000;
+        border-radius: 50%;
+    }
+    .avatar-placeholder {
+        width: 32px; height: 32px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 14px; font-weight: 700; color: #fff;
+        background: linear-gradient(135deg, #405de6, #c13584);
+    }
+
+    /* Post actions icon hover */
+    .post-action-icon {
+        font-size: 1.55rem;
+        transition: color 0.15s, transform 0.15s;
+        cursor: pointer;
+    }
+    .post-action-icon:hover { color: #aaa; transform: scale(1.1); }
+
+    .liked-heart { color: #e33; animation: heartPop 0.3s ease; }
+    @keyframes heartPop {
+        0%   { transform: scale(1); }
+        50%  { transform: scale(1.4); }
+        100% { transform: scale(1); }
+    }
+
+    /* Story bar */
+    .story-scroll {
+        overflow-x: auto;
+        scrollbar-width: none;
+    }
+    .story-scroll::-webkit-scrollbar { display: none; }
+    .story-item { flex-shrink: 0; text-align: center; cursor: pointer; }
+    .story-item span { font-size: 0.72rem; color: #aaa; display: block; margin-top: 4px; max-width: 62px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+</style>
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-12" style="max-width: 470px;">
+
+            <!-- Stories bar (decorativo) -->
+            <div class="glass-panel rounded-4 p-3 mb-4 story-scroll d-flex gap-3">
+                <!-- Próprio usuário -->
+                <div class="story-item">
+                    <div class="avatar-ring">
+                        {% if user.profile.avatar %}
+                            <img src="{{ user.profile.avatar.url }}" style="width:56px;height:56px;object-fit:cover;">
+                        {% else %}
+                            <div class="avatar-placeholder" style="width:56px;height:56px;font-size:20px;">{{ user.username|first|upper }}</div>
+                        {% endif %}
+                    </div>
+                    <span>{{ user.username }}</span>
+                </div>
+                {% for su in suggested_users %}
+                <div class="story-item">
+                    <div class="avatar-ring">
+                        {% if su.profile.avatar %}
+                            <img src="{{ su.profile.avatar.url }}" style="width:56px;height:56px;object-fit:cover;">
+                        {% else %}
+                            <div class="avatar-placeholder" style="width:56px;height:56px;font-size:20px;">{{ su.username|first|upper }}</div>
+                        {% endif %}
+                    </div>
+                    <a href="{% url 'perfil_usuario' su.username %}" class="text-white text-decoration-none">{{ su.username }}</a>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Feed de Posts -->
+            {% for post in posts %}
+            <div class="card glass-panel rounded-4 mb-4 border-0 post-card" id="post-{{ post.id }}">
+
+                <!-- Cabeçalho do Post -->
+                <div class="card-header bg-transparent border-0 d-flex align-items-center p-3 gap-3">
+                    <div class="avatar-ring">
+                        {% if post.user.profile.avatar %}
+                            <img src="{{ post.user.profile.avatar.url }}" style="width:32px;height:32px;object-fit:cover;">
+                        {% else %}
+                            <div class="avatar-placeholder" style="width:32px;height:32px;">{{ post.user.username|first|upper }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="flex-grow-1">
+                        <a href="{% url 'perfil_usuario' post.user.username %}" class="text-white text-decoration-none fw-bold" style="font-size:0.92rem;">{{ post.user.username }}</a>
+                        <span class="text-muted d-block" style="font-size:0.77rem;">{{ post.created_at|timesince }} atrás</span>
+                    </div>
+                    <i class="bi bi-three-dots text-muted" style="cursor:pointer;"></i>
+                </div>
+
+                <!-- Mídia do Post -->
+                {% if post.image %}
+                <img src="{{ post.image.url }}" class="img-fluid w-100" alt="Post de {{ post.user.username }}"
+                     style="max-height: 585px; object-fit: cover;">
+                {% endif %}
+
+                {% if post.video %}
+                <video src="{{ post.video.url }}" controls class="w-100"
+                       style="max-height: 585px; object-fit: contain; background: #0a0a0a;"></video>
+                {% endif %}
+
+                {% if post.audio %}
+                <div class="p-4 text-center" style="background: rgba(0,149,246,0.06); border-top: 1px solid rgba(255,255,255,0.07); border-bottom: 1px solid rgba(255,255,255,0.07);">
+                    <i class="bi bi-music-note-beamed text-spider-blue fs-1 mb-3 d-block"></i>
+                    <audio src="{{ post.audio.url }}" controls class="w-100"></audio>
+                </div>
+                {% endif %}
+
+                <!-- Ações -->
+                <div class="card-body bg-transparent p-3 pb-2 border-0">
+                    <div class="d-flex align-items-center mb-2 gap-3">
+                        <a href="{% url 'like_post' post.id %}" class="text-decoration-none like-btn" title="Curtir">
+                            {% if user in post.likes.all %}
+                                <i class="bi bi-heart-fill liked-heart post-action-icon"></i>
+                            {% else %}
+                                <i class="bi bi-heart text-white post-action-icon"></i>
+                            {% endif %}
+                        </a>
+                        <a href="#" class="text-white text-decoration-none"
+                           data-bs-toggle="collapse" data-bs-target="#comments-{{ post.id }}" title="Comentar">
+                            <i class="bi bi-chat post-action-icon"></i>
+                        </a>
+                        <a href="javascript:void(0);"
+                           onclick="navigator.clipboard.writeText(window.location.origin + '#post-{{ post.id }}').then(() => { this.querySelector('i').className='bi bi-check2 post-action-icon text-spider-blue'; setTimeout(() => this.querySelector('i').className='bi bi-send post-action-icon text-white', 1500); })"
+                           class="text-white text-decoration-none" title="Compartilhar">
+                            <i class="bi bi-send post-action-icon"></i>
+                        </a>
+                        <a href="#" class="text-white text-decoration-none ms-auto" title="Salvar">
+                            <i class="bi bi-bookmark post-action-icon"></i>
+                        </a>
+                    </div>
+
+                    {% if post.likes.count > 0 %}
+                    <p class="fw-bold mb-1" style="font-size:0.92rem;">
+                        {{ post.likes.count }} curtida{% if post.likes.count != 1 %}s{% endif %}
+                    </p>
+                    {% endif %}
+
+                    {% if post.content %}
+                    <p class="mb-1" style="font-size:0.92rem;">
+                        <a href="{% url 'perfil_usuario' post.user.username %}" class="text-white text-decoration-none fw-bold me-1">{{ post.user.username }}</a>
+                        <span>{{ post.content }}</span>
+                    </p>
+                    {% endif %}
+
+                    {% if post.comments.count > 0 %}
+                    <a href="#" class="text-muted text-decoration-none d-block mb-2" style="font-size:0.88rem;"
+                       data-bs-toggle="collapse" data-bs-target="#comments-{{ post.id }}">
+                        Ver todos os {{ post.comments.count }} comentário{% if post.comments.count != 1 %}s{% endif %}
+                    </a>
+                    {% endif %}
+
+                    <!-- Comentários -->
+                    <div class="collapse" id="comments-{{ post.id }}">
+                        {% for comment in post.comments.all %}
+                        <p class="mb-1" style="font-size:0.88rem;">
+                            <a href="{% url 'perfil_usuario' comment.user.username %}" class="text-white text-decoration-none fw-bold me-1">{{ comment.user.username }}</a>
+                            <span>{{ comment.content }}</span>
+                        </p>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Adicionar comentário -->
+                    <form action="{% url 'comment_post' post.id %}" method="post"
+                          class="d-flex align-items-center border-top mt-2 pt-2"
+                          style="border-color: rgba(255,255,255,0.08) !important;">
+                        {% csrf_token %}
+                        <input type="text" name="content" class="form-control comment-input flex-grow-1"
+                               placeholder="Adicione um comentário...">
+                        <button type="submit" class="btn btn-link text-spider-blue text-decoration-none fw-bold px-2 shadow-none"
+                                style="white-space: nowrap; font-size: 0.88rem;">Publicar</button>
+                    </form>
+                </div>
+            </div>
+            {% empty %}
+            <div class="text-center py-5 mt-4 glass-panel rounded-4">
+                <div class="rounded-circle border border-2 border-secondary d-inline-flex align-items-center justify-content-center mb-4"
+                     style="width: 88px; height: 88px;">
+                    <i class="bi bi-camera fs-1 text-white"></i>
+                </div>
+                <h4 class="text-white fw-bold mb-2">Compartilhe fotos e vídeos</h4>
+                <p class="text-muted mb-4">Siga pessoas para ver publicações aqui, ou crie sua primeira publicação!</p>
+                <div class="d-flex gap-3 justify-content-center flex-wrap">
+                    <a href="{% url 'descobrir' %}" class="btn btn-spider px-4 rounded-3 fw-bold">
+                        <i class="bi bi-search me-2"></i>Encontrar pessoas
+                    </a>
+                    <a href="#" class="btn btn-outline-light px-4 rounded-3 fw-bold"
+                       data-bs-toggle="modal" data-bs-target="#createPostModal">
+                        <i class="bi bi-plus-circle me-2"></i>Criar publicação
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+
+        </div>
+    </div>
+</div>
+
+{% else %}
+<!-- ── Landing page premium ── -->
+<style>
+    .landing-wrap {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 20px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    /* Glow orbs de fundo */
+    .landing-wrap::before {
+        content: '';
+        position: fixed;
+        top: -20%;
+        left: -10%;
+        width: 600px;
+        height: 600px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(99,102,241,0.18) 0%, transparent 70%);
+        pointer-events: none;
+        animation: orbFloat 8s ease-in-out infinite;
+    }
+    .landing-wrap::after {
+        content: '';
+        position: fixed;
+        bottom: -20%;
+        right: -10%;
+        width: 500px;
+        height: 500px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(139,92,246,0.15) 0%, transparent 70%);
+        pointer-events: none;
+        animation: orbFloat 10s ease-in-out infinite reverse;
+    }
+    @keyframes orbFloat {
+        0%, 100% { transform: translate(0, 0) scale(1); }
+        50% { transform: translate(30px, -30px) scale(1.08); }
+    }
+
+    /* Card central */
+    .landing-card {
+        width: 100%;
+        max-width: 400px;
+        background: rgba(12, 12, 20, 0.80);
+        backdrop-filter: blur(28px);
+        -webkit-backdrop-filter: blur(28px);
+        border: 1px solid rgba(255,255,255,0.09);
+        border-radius: 28px;
+        padding: 44px 36px 36px;
+        box-shadow: 0 32px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(99,102,241,0.08);
+        position: relative;
+        z-index: 1;
+        animation: cardIn 0.6s cubic-bezier(0.16,1,0.3,1) forwards;
+    }
+    @keyframes cardIn {
+        from { opacity: 0; transform: translateY(24px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Logo */
+    .landing-logo {
+        font-family: cursive;
+        font-size: 3rem;
+        font-weight: 900;
+        letter-spacing: -3px;
+        background: linear-gradient(135deg, #fff 30%, rgba(99,102,241,0.9) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        line-height: 1;
+        margin-bottom: 6px;
+    }
+    .landing-tagline {
+        font-size: 0.92rem;
+        color: rgba(255,255,255,0.45);
+        margin-bottom: 32px;
+        line-height: 1.5;
+    }
+
+    /* Features mini */
+    .landing-features {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 28px;
+    }
+    .landing-feat {
+        flex: 1;
+        background: rgba(99,102,241,0.08);
+        border: 1px solid rgba(99,102,241,0.18);
+        border-radius: 14px;
+        padding: 12px 8px;
+        text-align: center;
+    }
+    .landing-feat i {
+        font-size: 1.2rem;
+        color: #818cf8;
+        display: block;
+        margin-bottom: 4px;
+    }
+    .landing-feat span {
+        font-size: 0.68rem;
+        color: rgba(255,255,255,0.45);
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+    }
+
+    /* Botões */
+    .btn-landing-primary {
+        display: block;
+        width: 100%;
+        padding: 13px;
+        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+        border: none;
+        border-radius: 16px;
+        color: #fff;
+        font-weight: 700;
+        font-size: 0.95rem;
+        text-decoration: none;
+        text-align: center;
+        transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+        box-shadow: 0 6px 24px rgba(99,102,241,0.35);
+        margin-bottom: 12px;
+    }
+    .btn-landing-primary:hover {
+        opacity: 0.92;
+        transform: translateY(-1px);
+        box-shadow: 0 10px 32px rgba(99,102,241,0.5);
+        color: #fff;
+    }
+    .btn-landing-secondary {
+        display: block;
+        width: 100%;
+        padding: 12px;
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.12);
+        border-radius: 16px;
+        color: rgba(255,255,255,0.8);
+        font-weight: 600;
+        font-size: 0.92rem;
+        text-decoration: none;
+        text-align: center;
+        transition: background 0.2s, border-color 0.2s;
+    }
+    .btn-landing-secondary:hover {
+        background: rgba(255,255,255,0.09);
+        border-color: rgba(255,255,255,0.25);
+        color: #fff;
+    }
+
+    /* Divider */
+    .landing-divider {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin: 18px 0;
+    }
+    .landing-divider::before,
+    .landing-divider::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: rgba(255,255,255,0.08);
+    }
+    .landing-divider span {
+        font-size: 0.78rem;
+        color: rgba(255,255,255,0.3);
+        font-weight: 600;
+        letter-spacing: 1px;
+    }
+
+    /* Rodapé da card */
+    .landing-footer-text {
+        text-align: center;
+        margin-top: 22px;
+        font-size: 0.82rem;
+        color: rgba(255,255,255,0.35);
+    }
+    .landing-footer-text a {
+        color: #818cf8;
+        text-decoration: none;
+        font-weight: 600;
+    }
+    .landing-footer-text a:hover { text-decoration: underline; }
+
+    /* Pulse nos avatares decorativos */
+    .landing-avatars {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 22px;
+        gap: -8px;
+    }
+    .lav {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        border: 2px solid #0b0b12;
+        margin-left: -8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: #fff;
+    }
+    .lav-count {
+        background: rgba(99,102,241,0.25);
+        border-color: rgba(99,102,241,0.4);
+        font-size: 0.72rem;
+    }
+</style>
+
+<div class="landing-wrap">
+    <div class="landing-card">
+
+        <!-- Logo -->
+        <div class="landing-logo">spider</div>
+        <p class="landing-tagline">Conecte‑se, compartilhe e descubra momentos incríveis com amigos.</p>
+
+        <!-- Mini avatares decorativos -->
+        <div class="landing-avatars">
+            <div class="lav" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);">A</div>
+            <div class="lav" style="background:linear-gradient(135deg,#ec4899,#f43f5e);">B</div>
+            <div class="lav" style="background:linear-gradient(135deg,#0ea5e9,#6366f1);">C</div>
+            <div class="lav" style="background:linear-gradient(135deg,#10b981,#0ea5e9);">D</div>
+            <div class="lav lav-count">+99</div>
+        </div>
+
+        <!-- Features -->
+        <div class="landing-features">
+            <div class="landing-feat">
+                <i class="bi bi-camera"></i>
+                <span>Fotos</span>
+            </div>
+            <div class="landing-feat">
+                <i class="bi bi-chat-dots"></i>
+                <span>Mensagens</span>
+            </div>
+            <div class="landing-feat">
+                <i class="bi bi-people"></i>
+                <span>Comunidade</span>
+            </div>
+        </div>
+
+        <!-- Botões -->
+        <a href="{% url 'login' %}" class="btn-landing-primary">
+            <i class="bi bi-box-arrow-in-right me-2"></i>Entrar na conta
+        </a>
+
+        <div class="landing-divider"><span>OU</span></div>
+
+        <a href="{% url 'register' %}" class="btn-landing-secondary">
+            <i class="bi bi-person-plus me-2"></i>Criar conta grátis
+        </a>
+
+        <!-- Rodapé -->
+        <p class="landing-footer-text">
+            Ao entrar, você concorda com nossos <a href="#">Termos</a> e <a href="#">Privacidade</a>.
+        </p>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
